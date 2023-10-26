@@ -21,13 +21,16 @@ repositories {
 	maven(url = "https://oss.sonatype.org/content/groups/public/")
 
 	// ---------- [ Jitpack ] ----------
-	maven (url = "https://jitpack.io/")
+	maven(url = "https://jitpack.io/")
 
 	// ---------- [ CodeMC ] ----------
 	maven(url = "https://repo.codemc.org/repository/maven-public/")
 
 	// ---------- [ Apache Maven ] ----------
-	maven(url ="https://repo.maven.apache.org/maven2/")
+	maven(url = "https://repo.maven.apache.org/maven2/")
+
+	// ---------- [ Redempt / Redlib ] ----------
+	maven(url = "https://redempt.dev")
 
 }
 
@@ -35,8 +38,17 @@ dependencies {
 	// ---------- [ PaperMC ] ----------
 	compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
 
+	// ---------- [ LuckPerms ] ----------
+	compileOnly("net.luckperms:api:5.4")
+
 	// ---------- [ SE7ENLib ] ----------
-	implementation("com.github.DeathGOD7:SE7ENLib:master-SNAPSHOT")
+	implementation("com.github.deathgod7:SE7ENLib:master-SNAPSHOT")
+
+	// ---------- [ RedLibs ] ----------
+	implementation("com.github.Redempt:RedLib:6.5.8")
+
+	// ---------- [ Adventure ] ----------
+	implementation("net.kyori:adventure-platform-bukkit:4.3.1")
 
 	// ---------- [ Test - JUnit ] ----------
 	testImplementation(platform("org.junit:junit-bom:5.9.1"))
@@ -47,7 +59,7 @@ dependencies {
 tasks.withType<ShadowJar> {
 	minimize()
 	mergeServiceFiles()
-	archiveFileName.set("${project.name}-${project.version}-shadow.jar")
+	archiveFileName.set("${project.name}-${project.version}-all.jar")
 }
 
 
@@ -58,10 +70,8 @@ tasks {
 }
 
 val targetJavaVersion = 8
-tasks.withType<JavaCompile> {
-	val sourceCompatibility = JavaVersion.VERSION_1_8
-	val targetCompatibility = JavaVersion.VERSION_1_8
-}
+val sourceCompatibility = JavaVersion.VERSION_1_8
+val targetCompatibility = JavaVersion.VERSION_1_8
 
 java {
 	val javaVersion = JavaVersion.toVersion(targetJavaVersion)

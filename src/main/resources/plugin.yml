@@ -2,7 +2,8 @@ name: CosmeticRanks
 version: '${version}'
 main: com.github.deathgod7.cosmeticranks.CosmeticRanks
 api-version: '1.13'
-prefix: Cosmetic Ranks
+prefix: CosmeticRanks
 authors: [ Death GOD 7 ]
 description: Custom ranks, prestige, and many more... elevate your player experience!
 website: https://gtihub.com/DeathGOD7
+softdepend: [ LuckPerms ]
