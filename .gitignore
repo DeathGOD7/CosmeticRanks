@@ -2,6 +2,7 @@
 *.backup
 *.template
 *.db
+*.se7en
 
 # IntelliJ
 out/
