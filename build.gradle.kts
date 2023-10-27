@@ -32,6 +32,9 @@ repositories {
 	// ---------- [ Redempt / Redlib ] ----------
 	maven(url = "https://redempt.dev")
 
+	// ---------- [ Triumph Team ] ----------
+	maven(url = "https://repo.triumphteam.dev/snapshots/")
+
 }
 
 dependencies {
@@ -47,8 +50,13 @@ dependencies {
 	// ---------- [ RedLibs ] ----------
 	implementation("com.github.Redempt:RedLib:6.5.8")
 
+	// ---------- [ Triumph GUI ] ----------
+//	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-SNAPSHOT")
+	implementation("dev.triumphteam:triumph-gui:3.1.6")
+
 	// ---------- [ Adventure ] ----------
 	implementation("net.kyori:adventure-platform-bukkit:4.3.1")
+	implementation("net.kyori:adventure-text-minimessage:4.14.0")
 
 	// ---------- [ Test - JUnit ] ----------
 	testImplementation(platform("org.junit:junit-bom:5.9.1"))
@@ -60,6 +68,8 @@ tasks.withType<ShadowJar> {
 	minimize()
 	mergeServiceFiles()
 	archiveFileName.set("${project.name}-${project.version}-all.jar")
+
+	relocate("dev.triumphteam.gui", "com.github.deathgod7.cosmeticranks.gui")
 }
 
 

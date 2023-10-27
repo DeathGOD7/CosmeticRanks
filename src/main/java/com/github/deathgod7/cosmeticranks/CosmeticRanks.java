@@ -6,6 +6,8 @@ import com.github.deathgod7.cosmeticranks.utils.Logger;
 import com.github.deathgod7.cosmeticranks.utils.Logger.LogLevels;
 import com.github.deathgod7.cosmeticranks.utils.Logger.LogTypes;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.Bukkit;
@@ -133,7 +135,8 @@ public final class CosmeticRanks extends JavaPlugin {
 
 		// register events?
 
-		Logger.log(_languageFile.getProperty("plugin.test").replace("<prefix>", _mainConfig.prefix), LogLevels.info, LogTypes.log);
+		TextComponent message = Component.text(_languageFile.getProperty("plugin.test").replace("<prefix>", _mainConfig.prefix));
+		Logger.log(message, LogTypes.debug);
 	}
 
 	@Override

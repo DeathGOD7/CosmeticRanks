@@ -7,6 +7,10 @@ package com.github.deathgod7.cosmeticranks.config;
 import com.github.deathgod7.cosmeticranks.CosmeticRanks;
 import redempt.redlib.config.annotations.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @ConfigMappable
 public class MainConfig {
 	public transient String pluginversion = CosmeticRanks.getPDFile().getVersion();
@@ -40,7 +44,11 @@ public class MainConfig {
 	@ConfigName("settings.language")
 	public String language = "en_US";
 	@ConfigName("settings.prefix")
-	public String prefix = "[CosmeticRanks]";
+	public String prefix = "[CosmeticRanks]"; // cosmetic
+	@ConfigName("settings.lptrack")
+	public String lptrack = "cosmetic";
+	@ConfigName("settings.permanentranks")
+	public List<String> permanentranks = Arrays.asList("examplerank1", "examplerank2");
 
 	@Comment("Database support for this plugin either for cross server (bungeecord / velocity or any proxy)")
 	@Comment("or for save-storage / safe-keeping campaign. We go you covered fam!!")
