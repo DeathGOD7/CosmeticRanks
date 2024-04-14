@@ -2,20 +2,23 @@
 // Name : Logger
 // Author : Death GOD 7
 
-package com.github.deathgod7.cosmeticranks.utils;
+package io.github.deathgod7.cosmeticranks.utils;
 
-import com.github.deathgod7.cosmeticranks.CosmeticRanks;
+import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public final class Logger {
 
 	static String logPrefix = CosmeticRanks.getInstance().getLanguageFile().get("plugin.logprefix").toString()
-			.replace("<prefix>", CosmeticRanks.getInstance().getMainConfig().prefix);
+			.replace("<prefix>", CosmeticRanks.getInstance().getMainConfig().getPrefix());
+
 	static TextComponent logPrefixTC = Component.text(logPrefix);
-	public static boolean debugMode = CosmeticRanks.getInstance().getMainConfig().debug;
+	public static boolean debugMode = CosmeticRanks.getInstance().getMainConfig().getDebug();
 
 	public enum LogTypes {
 		log,
@@ -53,5 +56,13 @@ public final class Logger {
 			CosmeticRanks.getInstance().adventure().console().sendMessage(logPrefixTC.color(NamedTextColor.GRAY).append(msg));
 		}
 
+	}
+
+	public static void sendToPlayer(CommandSender sender, Component msg) {
+		CosmeticRanks.getInstance().adventure().sender(sender).sendMessage(logPrefixTC.append(msg));
+	}
+
+	public static void sendToPlayer(Player player, Component msg) {
+		CosmeticRanks.getInstance().adventure().player(player).sendMessage(logPrefixTC.append(msg));
 	}
 }

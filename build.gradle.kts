@@ -35,6 +35,8 @@ repositories {
 	// ---------- [ Triumph Team ] ----------
 	maven(url = "https://repo.triumphteam.dev/snapshots/")
 
+	maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/")
+
 }
 
 dependencies {
@@ -45,18 +47,23 @@ dependencies {
 	compileOnly("net.luckperms:api:5.4")
 
 	// ---------- [ SE7ENLib ] ----------
-	implementation("com.github.deathgod7:SE7ENLib:master-SNAPSHOT")
+//	compileOnly("com.github.deathgod7:SE7ENLib:master-SNAPSHOT")
+	implementation("io.github.deathgod7:SE7ENLib:1.1.0-SNAPSHOT")
 
-	// ---------- [ RedLibs ] ----------
-	implementation("com.github.Redempt:RedLib:6.5.8")
-
-	// ---------- [ Triumph GUI ] ----------
+	// ---------- [ Triumph CMD/GUI ] ----------
 //	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-SNAPSHOT")
-	implementation("dev.triumphteam:triumph-gui:3.1.6")
+	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-ALPHA-10")
+	implementation("dev.triumphteam:triumph-gui:3.1.7")
 
 	// ---------- [ Adventure ] ----------
 	implementation("net.kyori:adventure-platform-bukkit:4.3.1")
 	implementation("net.kyori:adventure-text-minimessage:4.14.0")
+
+	// ---------- [ Yaml ] ----------
+	implementation("com.amihaiemil.web:eo-yaml:7.2.0")
+
+	// ---------- [ PlaceholderAPI ] ----------
+	compileOnly("me.clip:placeholderapi:2.11.5")
 
 	// ---------- [ Test - JUnit ] ----------
 	testImplementation(platform("org.junit:junit-bom:5.9.1"))
@@ -65,11 +72,13 @@ dependencies {
 }
 
 tasks.withType<ShadowJar> {
+	configurations = listOf(project.configurations.runtimeClasspath.get())
 	minimize()
 	mergeServiceFiles()
 	archiveFileName.set("${project.name}-${project.version}-all.jar")
 
-	relocate("dev.triumphteam.gui", "com.github.deathgod7.cosmeticranks.gui")
+	relocate("dev.triumphteam.gui", "io.github.deathgod7.cosmeticranks.gui")
+	relocate("dev.triumphteam.cmd", "io.github.deathgod7.cosmeticranks.cmd")
 }
 
 
@@ -124,7 +133,12 @@ tasks.test {
 
 
 tasks.processResources {
-	expand (
+
+	val placeholders = mapOf(
 			"version" to version
 	)
+
+	filesMatching("plugin.yml") {
+		expand(placeholders)
+	}
 }

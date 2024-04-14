@@ -1,0 +1,69 @@
+# ############################################################################# #
+# +---------------------------------------------------------------------------+ #
+# |                                                                           | #
+# |     ___                       _    _         ___              _           | #
+# |    / __| ___  ___ _ __   ___ | |_ (_) __    | _ \ __ _  _ _  | |__ ___    | #
+# |   | (__ / _ \(_-/| '  \ / -_)|  _|| |/ _|   |   // _` || ' \ | / /(_-/    | #
+# |    \___|\___//__/|_|_|_|\___| \__||_|\__|   |_|_\\__/_||_||_||_\_\/__/    | #
+# |                                                                           | #
+# |                               - Elevate your player experience!           | #
+# |                                                                           | #
+# |                [ Github : https://github.com/DeathGOD7 ]                  | #
+# |        [ Wiki : https://github.com/DeathGOD7/CosmeticRanks/wiki ]         | #
+# |                                                                           | #
+# +---------------------------------------------------------------------------+ #
+# ############################################################################# #
+---
+# Baisc settings for the plugin
+# prefix = The prefix used in logger and messages
+# version = The version of the plugin
+# oldversion = The old version you updated from
+# language = This will allow you to have custom language file
+prefix: '[CosmeticRanks]'
+version: '1.0.0'
+oldversion: '???'
+language: 'en_US'
+
+# Database support for this plugin either for cross server (bungeecord / velocity or any proxy)
+# or for data-storage / safe-keeping campaign. We go you covered fam!!
+database:
+  # You can choose database type for either of these types
+  # type = mysql, sqlite, mongodb (Default : sqlite)
+  type: 'sqlite'
+  # NOTE : No need to touch any of this settings below if you are using sqlite database type in above settings
+  # Put your database host ip or custom domain address here along with port number if any (MySQL Default Port : 3306)
+  host: 'database.example.com'
+  # Put your username that you use to access the database
+  username: 'root'
+  # Put your password that you use to access the database. PS : It is top secret high security classified code right?
+  password: 'toor'
+  # Put the name of database that you want the data to be stored at
+  dbname: 'database'
+
+# Settings for the tracks of Luck Perms (can have multiple tracks)
+# NOTE : The key in yaml file should match with the track in luck perms (eg: default, donator, staff etc)
+lptracks:
+  # The track that you want to use for cosmetic rank
+  default:
+    # hideLocked = Hide the locked ranks in the GUI (Default : false)
+    hidelocked: 'false'
+    # permanentRanks = The ranks that are permanent and cannot be removed when clearing the ranks prefix (Use [] to disable)
+    permanentranks:
+      - 'default'
+    # gui = The row and column number where the item in GUI should be placed
+    gui:
+      row: '3'
+      col: '5'
+    # name = The name of the track that will be displayed in the GUI
+    name: 'Default Ranks'
+  events:
+    hidelocked: 'true'
+    permanentranks: []
+    gui:
+      row: '3'
+      col: '6'
+    name: 'Events Ranks'
+
+# Additional settings for the plugin. Useful for debugging the plugin or to find the issue.
+# debug = Enable or disable debugging mode (Default : false)
+debug: 'false'
