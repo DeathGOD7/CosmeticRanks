@@ -8,7 +8,12 @@ import dev.triumphteam.cmd.bukkit.annotation.Permission;
 import dev.triumphteam.cmd.core.command.RootCommand;
 import dev.triumphteam.cmd.core.annotations.*;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
+import io.github.deathgod7.SE7ENLib.database.component.Column;
+import io.github.deathgod7.SE7ENLib.database.dbtype.mongodb.MongoDB;
+import io.github.deathgod7.SE7ENLib.database.dbtype.mysql.MySQL;
+import io.github.deathgod7.SE7ENLib.database.dbtype.sqlite.SQLite;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
+import io.github.deathgod7.cosmeticranks.utils.Helper;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -17,6 +22,10 @@ import net.luckperms.api.LuckPerms;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Command(value = "cosmeticranks", alias = {"cr", "cranks"})
 @Permission("cosmeticranks.use")
@@ -105,7 +114,13 @@ public class MainCommand{
 	@Permission("cosmeticranks.use.reload")
 	public void reload(CommandSender commandSender){
 		Component msg = Component.text(instance.getLanguageFile().getProperty("plugin.reload"));
+		Component success = Component.text(instance.getLanguageFile().getProperty("plugin.reload.success"));
+
 		audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(msg));
+
+		// reload
+
+		audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(success));
 	}
 
 
@@ -115,9 +130,48 @@ public class MainCommand{
 	@Command("rank")
 	@Permission("cosmeticranks.rank")
 	public class RankCommand {
-		@Command("add")
+		@Command(value = "add")
 		@Permission("cosmeticranks.rank.add")
-		public void addRank(CommandSender sender, Player player, @Suggestion("lptracks") String track, String rank) {
+		public void addRank(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
+			sender.sendMessage("Adding rank to player");
+			sender.sendMessage("Player: " + player.getName());
+			sender.sendMessage("Track: " + track);
+			sender.sendMessage("Rank: " + rank);
+			// Add rank to player
+			List<Column> allCols = instance.getRankManager().getRanksTable().get(track).getColumns();
+
+			Column colUUID = Helper.findColumn(allCols, "uuid");
+			assert colUUID != null;
+			colUUID.setValue(player.getUniqueId().toString());
+
+			Column colObtainedranks = Helper.findColumn(allCols, "obtainedranks");
+			assert colObtainedranks != null;
+
+			List<String> obtainedRanks = new java.util.ArrayList<>(List.of(colObtainedranks.getValue().toString().split(",")));
+			obtainedRanks.add(rank);
+
+			colObtainedranks.setValue(String.join(",", obtainedRanks));
+
+			if (dbm.getDatabase() instanceof SQLite) {
+				dbm.getSQLite().updateData(track, colUUID, List.of(colObtainedranks));
+			}
+			else if (dbm.getDatabase() instanceof MySQL) {
+				dbm.getMySQL().updateData(track, colUUID, List.of(colObtainedranks));
+			}
+			else if (dbm.getDatabase() instanceof MongoDB) {
+				dbm.getMongoDB().updateData(track, colUUID, List.of(colObtainedranks));
+			}
+		}
+
+		@Command(value = "give")
+		@Permission("cosmeticranks.rank.add")
+		public void giveRank(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
+			addRank(sender, player, track, rank);
+		}
+
+		@Command(value = "remove")
+		@Permission("cosmeticranks.rank.remove")
+		public void removeRank(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
 			sender.sendMessage("Adding rank to player");
 			sender.sendMessage("Player: " + player.getName());
 			sender.sendMessage("Track: " + track);
