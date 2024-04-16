@@ -6,11 +6,13 @@ import io.github.deathgod7.cosmeticranks.commands.CommandsHandler;
 import io.github.deathgod7.cosmeticranks.config.ConfigHandler;
 import io.github.deathgod7.cosmeticranks.config.MainConfig;
 import io.github.deathgod7.cosmeticranks.database.DatabaseHandler;
+import io.github.deathgod7.cosmeticranks.events.EventsHandler;
 import io.github.deathgod7.cosmeticranks.ranks.RankManager;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.Bukkit;
@@ -43,6 +45,12 @@ public final class CosmeticRanks extends JavaPlugin {
 			throw new IllegalStateException("Tried to access Adventure when the plugin was disabled!");
 		}
 		return this.adventure;
+	}
+
+	private MiniMessage miniMessage;
+
+	public MiniMessage getMiniMessage() {
+		return this.miniMessage;
 	}
 
 	public static PluginDescriptionFile getPDFile() {
@@ -79,6 +87,8 @@ public final class CosmeticRanks extends JavaPlugin {
 
 		// Initialize an audiences instance for the plugin
 		this.adventure = BukkitAudiences.create(this);
+		// Initialize MiniMessage API
+		this.miniMessage = MiniMessage.miniMessage();
 
 		if (Bukkit.getPluginManager().getPlugin("LuckPerms") == null) {
 			getLogger().info("Required dependent plugin was not found : LuckPerms");
@@ -141,8 +151,8 @@ public final class CosmeticRanks extends JavaPlugin {
 		// register commands
 		CommandsHandler commandsHandler = new CommandsHandler();
 
-
 		// register events?
+		this.getServer().getPluginManager().registerEvents(new EventsHandler(), this);
 
 	}
 

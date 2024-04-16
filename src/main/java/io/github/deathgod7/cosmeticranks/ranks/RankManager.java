@@ -41,24 +41,24 @@ public class RankManager {
 		{
 			System.out.println("Creating table for " + k);
 			if (luckPermsApi.getTrackManager().getTrack(k) == null) {
-				Logger.log(Component.text("[CREATE] Track " + k + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
+				Logger.log(Component.text("[CREATE Track] Track " + k + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
 				continue;
 			}
 
 			Column uuid = new Column("uuid", DataType.VARCHAR, 40);
 			Column playername = new Column("playername", DataType.VARCHAR, 40);
 			Column selectedrank = new Column("selectedrank", DataType.VARCHAR, 40);
-			Column obtainedranks = new Column("obtainedranks", DataType.VARCHAR, 250);
+			Column obtainedranks = new Column("obtainedranks", DataType.TEXT, 65535);
 
 			List<Column> columns = Arrays.asList(playername, selectedrank, obtainedranks);
 
 			Table newtable = new Table(k, uuid, columns);
 
-			/////
+			////////////////////////////////////
 
-			// REMOVE THE PRINT IN SE7ENLIB
+			// REMOVE THE PRINT IN SE7ENLIB  //
 
-			/////
+			///////////////////////////////////
 
 			DatabaseManager dbm = this.instance.getDBM();
 			DatabaseType dbtype = dbm.getDbInfo().getDbType();
@@ -78,7 +78,7 @@ public class RankManager {
 		for (String k : lptracksHM.keySet())
 		{
 			if (luckPermsApi.getTrackManager().getTrack(k) == null) {
-				Logger.log(Component.text("[LOAD] Track " + k + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
+				Logger.log(Component.text("[LOAD Track] Track " + k + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
 				continue;
 			}
 

@@ -10,6 +10,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
 public final class Logger {
@@ -17,7 +18,11 @@ public final class Logger {
 	static String logPrefix = CosmeticRanks.getInstance().getLanguageFile().get("plugin.logprefix").toString()
 			.replace("<prefix>", CosmeticRanks.getInstance().getMainConfig().getPrefix());
 
+	static String msgPrefix = CosmeticRanks.getInstance().getLanguageFile().get("plugin.msgprefix").toString()
+			.replace("<prefix>", CosmeticRanks.getInstance().getMainConfig().getPrefix());
 	static TextComponent logPrefixTC = Component.text(logPrefix);
+
+	static TextComponent msgPrefixTC = Component.text(msgPrefix);
 	public static boolean debugMode = CosmeticRanks.getInstance().getMainConfig().getDebug();
 
 	public enum LogTypes {
@@ -55,14 +60,23 @@ public final class Logger {
 		if ((logType == LogTypes.debug && debugMode) || logType == LogTypes.log) {
 			CosmeticRanks.getInstance().adventure().console().sendMessage(logPrefixTC.color(NamedTextColor.GRAY).append(msg));
 		}
-
 	}
 
 	public static void sendToPlayer(CommandSender sender, Component msg) {
-		CosmeticRanks.getInstance().adventure().sender(sender).sendMessage(logPrefixTC.append(msg));
+		CosmeticRanks.getInstance().adventure().sender(sender).sendMessage(msgPrefixTC.append(msg));
 	}
 
 	public static void sendToPlayer(Player player, Component msg) {
-		CosmeticRanks.getInstance().adventure().player(player).sendMessage(logPrefixTC.append(msg));
+		CosmeticRanks.getInstance().adventure().player(player).sendMessage(msgPrefixTC.append(msg));
+	}
+
+	public static void log(Component msg, CommandSender sender) {
+		if (sender instanceof ConsoleCommandSender) {
+			CosmeticRanks.getInstance().adventure().console().sendMessage(logPrefixTC.append(msg));
+		}
+		else {
+			CosmeticRanks.getInstance().adventure().console().sendMessage(logPrefixTC.append(msg));
+			CosmeticRanks.getInstance().adventure().sender(sender).sendMessage(msgPrefixTC.append(msg));
+		}
 	}
 }

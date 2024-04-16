@@ -56,8 +56,8 @@ dependencies {
 	implementation("dev.triumphteam:triumph-gui:3.1.7")
 
 	// ---------- [ Adventure ] ----------
-	implementation("net.kyori:adventure-platform-bukkit:4.3.1")
-	implementation("net.kyori:adventure-text-minimessage:4.14.0")
+	implementation("net.kyori:adventure-platform-bukkit:4.3.2")
+	implementation("net.kyori:adventure-text-minimessage:4.16.0")
 
 	// ---------- [ Yaml ] ----------
 	implementation("com.amihaiemil.web:eo-yaml:7.2.0")
