@@ -115,7 +115,6 @@ public class MainCommand{
 		audiences.sender(commandSender).sendMessage(Component.text("Status : ").color(NamedTextColor.GRAY).append(isConnected));
 	}
 
-
 	@Command("reload")
 	@Permission("cosmeticranks.use.reload")
 	public void reload(CommandSender commandSender){
@@ -129,9 +128,6 @@ public class MainCommand{
 		audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(success));
 	}
 
-
-	// rank
-	// /cr rank add <player> <track> <rank>
 
 	public List<Column> getPlayerDatas(Player player, String table) {
 		Column uuid = new Column("uuid", player.getUniqueId().toString(), DatabaseManager.DataType.VARCHAR);
@@ -236,7 +232,17 @@ public class MainCommand{
 				add(colObtainedranks);
 			}};
 
-			updatePlayerData(track, player, out);
+			boolean res = updatePlayerData(track, player, out);
+
+			if (!res) {
+				Component error = mm.deserialize(lang.getProperty("rank.add.failed")
+						.replace("<player>", player.getName())
+						.replace("<track>", track)
+						.replace("<rank>", rank)
+				);
+				Logger.log(error, sender);
+				return;
+			}
 
 			Component consolemsg = mm.deserialize(lang.getProperty("rank.add.console")
 					.replace("<player>", player.getName())
@@ -307,7 +313,17 @@ public class MainCommand{
 				add(colObtainedranks);
 			}};
 
-			updatePlayerData(track, player, out);
+			boolean res = updatePlayerData(track, player, out);
+
+			if (!res) {
+				Component error = mm.deserialize(lang.getProperty("rank.remove.failed")
+						.replace("<player>", player.getName())
+						.replace("<track>", track)
+						.replace("<rank>", rank)
+				);
+				Logger.log(error, sender);
+				return;
+			}
 
 			Component playermsg = mm.deserialize(lang.getProperty("rank.remove")
 					.replace("<rank>", rank)
@@ -322,6 +338,29 @@ public class MainCommand{
 			Logger.sendToPlayer(player, playermsg);
 			Logger.log(consolemsg, sender);
 		}
+
+		@Command("set")
+		@Permission("cosmeticranks.rank.set")
+		public class RankSetCommand {
+			@Command(value = "self")
+			@Permission("cosmeticranks.rank.set")
+			public void setRank(Player sender, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
+				Logger.log(Component.text("Set rank for self"), sender);
+				Logger.log(Component.text("Track : " + track), sender);
+				Logger.log(Component.text("Rank : " + rank), sender);
+			}
+
+			@Command(value = "other")
+			@Permission("cosmeticranks.rank.set.other")
+			public void setRankOther(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
+				Logger.log(Component.text("Set rank for other player"), sender);
+				Logger.log(Component.text("Player : " + player.getName()), sender);
+				Logger.log(Component.text("Track : " + track), sender);
+				Logger.log(Component.text("Rank : " + rank), sender);
+			}
+		}
+
+
 	}
 
 }

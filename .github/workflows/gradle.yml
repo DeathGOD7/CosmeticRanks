@@ -31,13 +31,14 @@ jobs:
           distribution: 'temurin'
 
       # to fix the said vulnerability of older version than 2.4.2
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@v3
+#
 #      - name: Build with Gradle
-#        uses: gradle/gradle-build-action@v2.4.2
-#        with:
-#          arguments: build --scan -xtest
+#        run: ./gradlew build --scan -xtest
 #
 #      - name: Upload a Build Artifact
-#        uses: actions/upload-artifact@v3
+#        uses: actions/upload-artifact@v4
 #        with:
-#          name: CosmeticRanks-SNAPSHOT
+#          name: CosmeticRanks-SNAPSHOT-${{ github.run_number }}
 #          path: ${{ github.workspace }}/build/libs/*.jar

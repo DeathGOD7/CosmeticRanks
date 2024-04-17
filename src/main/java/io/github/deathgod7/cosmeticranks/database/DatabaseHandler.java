@@ -53,6 +53,7 @@ public class DatabaseHandler {
 		}
 
 		this._dbm = new DatabaseManager(dbInfo);
+		this._dbm.setDebugMode(instance.getMainConfig().getDebug());
 	}
 
 

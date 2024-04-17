@@ -20,9 +20,9 @@ public final class Logger {
 
 	static String msgPrefix = CosmeticRanks.getInstance().getLanguageFile().get("plugin.msgprefix").toString()
 			.replace("<prefix>", CosmeticRanks.getInstance().getMainConfig().getPrefix());
-	static TextComponent logPrefixTC = Component.text(logPrefix);
+	static Component logPrefixTC = CosmeticRanks.getInstance().getMiniMessage().deserialize(logPrefix);
 
-	static TextComponent msgPrefixTC = Component.text(msgPrefix);
+	static Component msgPrefixTC = CosmeticRanks.getInstance().getMiniMessage().deserialize(msgPrefix);
 	public static boolean debugMode = CosmeticRanks.getInstance().getMainConfig().getDebug();
 
 	public enum LogTypes {
