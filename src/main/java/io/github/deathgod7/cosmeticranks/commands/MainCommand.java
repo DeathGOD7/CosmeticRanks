@@ -5,6 +5,7 @@
 package io.github.deathgod7.cosmeticranks.commands;
 
 import dev.triumphteam.cmd.bukkit.annotation.Permission;
+import dev.triumphteam.cmd.core.annotations.Optional;
 import dev.triumphteam.cmd.core.command.RootCommand;
 import dev.triumphteam.cmd.core.annotations.*;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
@@ -22,6 +23,8 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.LuckPerms;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -129,7 +132,7 @@ public class MainCommand{
 	}
 
 
-	public List<Column> getPlayerDatas(Player player, String table) {
+	public List<Column> getPlayerDatas(OfflinePlayer player, String table) {
 		Column uuid = new Column("uuid", player.getUniqueId().toString(), DatabaseManager.DataType.VARCHAR);
 		List<Column> allCols = null;
 
@@ -146,7 +149,7 @@ public class MainCommand{
 		return allCols;
 	}
 
-	public boolean updatePlayerData(String table, Player player, List<Column> columns) {
+	public boolean updatePlayerData(String table, OfflinePlayer player, List<Column> columns) {
 		Column pk = new Column("uuid", player.getUniqueId().toString(), DatabaseManager.DataType.VARCHAR);
 
 		if (dbm.getDatabase() instanceof SQLite) {
@@ -161,12 +164,30 @@ public class MainCommand{
 		return false;
 	}
 
+	public OfflinePlayer getPlayer(CommandSender sender, String player) {
+		UUID uuid = Bukkit.getPlayerUniqueId(player);
+
+		if (uuid == null || Bukkit.getOfflinePlayer(uuid).getName() == null) {
+			Component error = mm.deserialize(lang.getProperty("player.notfound")
+					.replace("<player>", player)
+			);
+			Logger.log(error, sender);
+			return null;
+		}
+
+		return Bukkit.getOfflinePlayer(uuid);
+	}
+
 	@Command("rank")
 	@Permission("cosmeticranks.rank")
 	public class RankCommand {
 		@Command(value = "add")
 		@Permission("cosmeticranks.rank.add")
-		public void addRank(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
+		public void addRank(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
+			OfflinePlayer pl = getPlayer(sender, player);
+
+			if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
+
 			// check if track or rank exists
 			if (lp.getTrackManager().getTrack(track) == null) {
 				Component errorNoTrack = mm.deserialize(lang.getProperty("rank.add.notrack")
@@ -185,12 +206,12 @@ public class MainCommand{
 			}
 
 			// Add rank to player
-			List<Column> allCols = getPlayerDatas(player, track);
+			List<Column> allCols = getPlayerDatas(pl, track);
 
 			// Check if player is found
 			if (allCols == null || allCols.isEmpty()) {
 				Component noPlayer = mm.deserialize(lang.getProperty("database.playernotfound")
-						.replace("<player>", player.getName())
+						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 				);
 
@@ -211,12 +232,12 @@ public class MainCommand{
 				);
 
 				Component consolemsg = mm.deserialize(lang.getProperty("rank.add.exists.console")
-						.replace("<player>", player.getName())
+						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 						.replace("<rank>", rank)
 				);
 
-				Logger.sendToPlayer(player, playermsg);
+				if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
 				Logger.log(consolemsg, sender);
 
 				return;
@@ -232,11 +253,11 @@ public class MainCommand{
 				add(colObtainedranks);
 			}};
 
-			boolean res = updatePlayerData(track, player, out);
+			boolean res = updatePlayerData(track, pl, out);
 
 			if (!res) {
 				Component error = mm.deserialize(lang.getProperty("rank.add.failed")
-						.replace("<player>", player.getName())
+						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 						.replace("<rank>", rank)
 				);
@@ -245,7 +266,7 @@ public class MainCommand{
 			}
 
 			Component consolemsg = mm.deserialize(lang.getProperty("rank.add.console")
-					.replace("<player>", player.getName())
+					.replace("<player>", pl.getName())
 					.replace("<track>", track)
 					.replace("<rank>", rank)
 			);
@@ -254,27 +275,31 @@ public class MainCommand{
 					.replace("<rank>", rank)
 			);
 
-			Logger.sendToPlayer(player, playermsg);
+			if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
 			Logger.log(consolemsg, sender);
 
 		}
 
 		@Command(value = "give")
 		@Permission("cosmeticranks.rank.add")
-		public void giveRank(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
+		public void giveRank(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
 			addRank(sender, player, track, rank);
 		}
 
 		@Command(value = "remove")
 		@Permission("cosmeticranks.rank.remove")
-		public void removeRank(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
+		public void removeRank(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
+			OfflinePlayer pl = getPlayer(sender, player);
+
+			if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
+
 			// Remove rank from player
-			List<Column> allCols = getPlayerDatas(player, track);
+			List<Column> allData = getPlayerDatas(pl, track);
 
 			// Check if player is found
-			if (allCols == null || allCols.isEmpty()) {
+			if (allData == null || allData.isEmpty()) {
 				Component noPlayer = mm.deserialize(lang.getProperty("database.playernotfound")
-						.replace("<player>", player.getName())
+						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 				);
 
@@ -283,14 +308,14 @@ public class MainCommand{
 				return;
 			}
 
-			Column colObtainedranks = Helper.findColumn(allCols, "obtainedranks");
+			Column colObtainedranks = Helper.findColumn(allData, "obtainedranks");
 			assert colObtainedranks != null;
 
 			List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
 
 			if (!temp.contains(rank)) {
 				Component consolemsg = mm.deserialize(lang.getProperty("rank.remove.doesntexist")
-						.replace("<player>", player.getName())
+						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 						.replace("<rank>", rank)
 				);
@@ -313,11 +338,11 @@ public class MainCommand{
 				add(colObtainedranks);
 			}};
 
-			boolean res = updatePlayerData(track, player, out);
+			boolean res = updatePlayerData(track, pl, out);
 
 			if (!res) {
 				Component error = mm.deserialize(lang.getProperty("rank.remove.failed")
-						.replace("<player>", player.getName())
+						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 						.replace("<rank>", rank)
 				);
@@ -330,12 +355,12 @@ public class MainCommand{
 			);
 
 			Component consolemsg = mm.deserialize(lang.getProperty("rank.remove.console")
-					.replace("<player>", player.getName())
+					.replace("<player>", pl.getName())
 					.replace("<track>", track)
 					.replace("<rank>", rank)
 			);
 
-			Logger.sendToPlayer(player, playermsg);
+			if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
 			Logger.log(consolemsg, sender);
 		}
 
@@ -352,12 +377,43 @@ public class MainCommand{
 
 			@Command(value = "other")
 			@Permission("cosmeticranks.rank.set.other")
-			public void setRankOther(CommandSender sender, Player player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
+			public void setRankOther(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
+				OfflinePlayer pl = getPlayer(sender, player);
+
+				if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
+
+
 				Logger.log(Component.text("Set rank for other player"), sender);
-				Logger.log(Component.text("Player : " + player.getName()), sender);
+				Logger.log(Component.text("Player : " + pl.getName()), sender);
 				Logger.log(Component.text("Track : " + track), sender);
 				Logger.log(Component.text("Rank : " + rank), sender);
 			}
+		}
+
+		@Command("clear")
+		@Permission("cosmeticranks.rank.clear")
+		public void clearRank(CommandSender sender, @Optional @Suggestion("allplayers") String player) {
+			OfflinePlayer pl;
+
+			if (player == null) {
+				if (sender instanceof Player) {
+					pl = (Player) sender;
+				}
+				else {
+					Logger.log(Component.text("You must specify a player").color(NamedTextColor.DARK_RED), sender);
+					return;
+				}
+			}
+			else {
+				pl = getPlayer(sender, player);
+
+				if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
+
+
+			}
+
+			// Clear all ranks
+			Logger.log(Component.text("Clear all ranks of " + pl.getName()), sender);
 		}
 
 

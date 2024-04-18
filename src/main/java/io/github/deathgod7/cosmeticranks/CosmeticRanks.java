@@ -7,6 +7,7 @@ import io.github.deathgod7.cosmeticranks.config.ConfigHandler;
 import io.github.deathgod7.cosmeticranks.config.MainConfig;
 import io.github.deathgod7.cosmeticranks.database.DatabaseHandler;
 import io.github.deathgod7.cosmeticranks.events.EventsHandler;
+import io.github.deathgod7.cosmeticranks.hooks.PlaceholderAPIHook;
 import io.github.deathgod7.cosmeticranks.ranks.RankManager;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -81,6 +82,11 @@ public final class CosmeticRanks extends JavaPlugin {
 		return _rankManager;
 	}
 
+	private PlaceholderAPIHook _placeholderAPIHook;
+	public PlaceholderAPIHook getPlaceholderAPIHook() {
+		return _placeholderAPIHook;
+	}
+
 	@Override
 	public void onEnable() {
 		_instance = this;
@@ -136,14 +142,21 @@ public final class CosmeticRanks extends JavaPlugin {
 			throw new RuntimeException(e);
 		}
 
-		// databse loading
-		DatabaseHandler databaseHandler = new DatabaseHandler();
-		this._dbm= databaseHandler.getDBM();
-
 		Logger.log(Component.text("Main config file loaded").color(NamedTextColor.GREEN), Logger.LogTypes.log);
 		Logger.log(Component.text("Language file loaded (" + _mainConfig.getLanguage() + ")").color(NamedTextColor.GREEN), Logger.LogTypes.log);
 		Logger.log(Component.text("Hooked to Luckperms successfully").color(NamedTextColor.GREEN), Logger.LogTypes.log);
+
+		// databse loading
+		DatabaseHandler databaseHandler = new DatabaseHandler();
+		this._dbm= databaseHandler.getDBM();
 		Logger.log(Component.text("Database loaded successfully (" + _mainConfig.getDatabase().getType() + ")").color(NamedTextColor.GREEN), Logger.LogTypes.log);
+
+		// register placehoder api
+		if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+			_placeholderAPIHook = new PlaceholderAPIHook();
+			getPlaceholderAPIHook().register();
+			Logger.log(Component.text("Hooked to PlaceholderAPI successfully").color(NamedTextColor.BLUE), Logger.LogTypes.log);
+		}
 
 		// rank loading
 		_rankManager = new RankManager(this);

@@ -20,6 +20,7 @@ import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.track.Track;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -154,6 +155,14 @@ public class CommandsHandler {
 
 	void registerSuggestions() {
 		// Register suggestions here
+
+		commandManager.registerSuggestion(SuggestionKey.of("allplayers"), (sender, arguments) -> {
+			List<String> players = new ArrayList<>();
+			for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
+				players.add(p.getName());
+			}
+			return players;
+		});
 
 		// For the lptracks
 		commandManager.registerSuggestion(SuggestionKey.of("lptracks"), (sender, arguments) -> {
