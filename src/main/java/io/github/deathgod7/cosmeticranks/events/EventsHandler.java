@@ -12,6 +12,7 @@ import io.github.deathgod7.SE7ENLib.database.dbtype.mysql.MySQL;
 import io.github.deathgod7.SE7ENLib.database.dbtype.sqlite.SQLite;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.cosmeticranks.ranks.RankManager;
+import io.github.deathgod7.cosmeticranks.utils.Helper;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -25,11 +26,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class EventsHandler implements Listener {
+
+	CosmeticRanks instance;
 	private final RankManager rankManager;
 	private final DatabaseManager dbm;
 	public EventsHandler() {
 		// Register events
-		CosmeticRanks instance = CosmeticRanks.getInstance();
+		instance = CosmeticRanks.getInstance();
 		rankManager = instance.getRankManager();
 		dbm = instance.getDBM();
 	}
@@ -141,7 +144,15 @@ public class EventsHandler implements Listener {
 				Component temp = Component.text("[Player Join] Player " + p.getName() + " already exists in the database table (" + table.getName() + ")").color(NamedTextColor.GRAY);
 				Logger.log(temp, Logger.LogTypes.debug);
 			}
+
+			if (!p.hasPlayedBefore()) {
+				List<Column> newdata = Helper.getPlayerDatas(p, s);
+				instance.getRankManager().updatePlayerData(p.getUniqueId(), s, newdata);
+			}
+
 		}
+
+
 	}
 
 	@EventHandler

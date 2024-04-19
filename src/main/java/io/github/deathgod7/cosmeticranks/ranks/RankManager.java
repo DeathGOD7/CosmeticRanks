@@ -118,7 +118,12 @@ public class RankManager {
 	}
 
 	public void updatePlayerData(UUID uuid, String track, List<Column> data) {
-		LinkedHashMap<String, List<Column>> playerData = cachedPlayerData.get(uuid);
+		LinkedHashMap<String, List<Column>> playerData;
+		if (!cachedPlayerData.containsKey(uuid)) {
+			playerData = new LinkedHashMap<>();
+		}else {
+			playerData = cachedPlayerData.get(uuid);
+		}
 		playerData.put(track, data);
 		cachedPlayerData.put(uuid, playerData);
 	}
