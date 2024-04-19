@@ -48,6 +48,7 @@ lptracks:
     # hideLocked = Hide the locked ranks in the GUI (Default : false)
     hidelocked: 'false'
     # permanentRanks = The ranks that are permanent and cannot be removed when clearing the ranks prefix (Use [] to disable)
+    # Values should be stored from lowest -> highest (Eg : 'default' -> 'donator' -> 'staff' )
     permanentranks:
       - 'default'
     # gui = The row and column number where the item in GUI should be placed

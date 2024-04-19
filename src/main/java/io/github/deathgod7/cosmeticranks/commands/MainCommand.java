@@ -23,12 +23,16 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.group.Group;
+import net.luckperms.api.node.types.PrefixNode;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.util.StringUtil;
 
 import java.util.*;
 
@@ -165,17 +169,67 @@ public class MainCommand{
 	}
 
 	public OfflinePlayer getPlayer(CommandSender sender, String player) {
-		UUID uuid = Bukkit.getPlayerUniqueId(player);
-
-		if (uuid == null || Bukkit.getOfflinePlayer(uuid).getName() == null) {
-			Component error = mm.deserialize(lang.getProperty("player.notfound")
-					.replace("<player>", player)
-			);
-			Logger.log(error, sender);
-			return null;
+		for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
+			if (p.getName() != null && p.getName().equals(player)) {
+				return p;
+			}
 		}
 
-		return Bukkit.getOfflinePlayer(uuid);
+		Component error = Helper.deserializeString(lang.getProperty("player.notfound")
+				.replace("<player>", player)
+		);
+		Logger.log(error, sender);
+
+		return  null;
+
+	}
+
+	public boolean isTrackInConfig(CommandSender sender, String track) {
+		boolean res = instance.getMainConfig().getLptracks().containsKey(track);
+
+		if (!res) {
+			Component error = Helper.deserializeString(lang.getProperty("track.notinconfig")
+					.replace("<track>", track)
+			);
+			Logger.log(error, sender);
+		}
+
+		return res;
+	}
+
+	public String getGroupDisplayName(String group) {
+		Group rankgroup = lp.getGroupManager().getGroup(group);
+
+		if (rankgroup == null) {
+			Logger.log(Component.text(lang.getProperty("group.notfound").replace("<group>", group)), Logger.LogTypes.debug);
+			return "???";
+		}
+
+		String out = rankgroup.getDisplayName();
+		if (out == null) {
+			out = StringUtils.capitalize(group);
+		}
+
+		return out;
+	}
+	public String getGroupPrefix(String group) {
+		Group rankgroup = lp.getGroupManager().getGroup(group);
+
+		if (rankgroup == null) {
+			Logger.log(Component.text(lang.getProperty("group.notfound").replace("<group>", group)), Logger.LogTypes.debug);
+			return "???";
+		}
+
+		String out = rankgroup.getNodes().stream()
+				.filter(node -> node instanceof PrefixNode)
+				.map(node -> ((PrefixNode) node).getMetaValue())
+				.findFirst().orElse(null);
+
+		if (out == null) {
+			out = StringUtils.capitalize(group);
+		}
+
+		return out;
 	}
 
 	@Command("rank")
@@ -188,16 +242,20 @@ public class MainCommand{
 
 			if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
 
+			if (!isTrackInConfig(sender,track)) {
+				return;
+			}
+
 			// check if track or rank exists
 			if (lp.getTrackManager().getTrack(track) == null) {
-				Component errorNoTrack = mm.deserialize(lang.getProperty("rank.add.notrack")
+				Component errorNoTrack = Helper.deserializeString(lang.getProperty("rank.add.notrack")
 						.replace("<track>", track)
 				);
 				Logger.log(errorNoTrack, sender);
 				return;
 			}
 			else if (!Objects.requireNonNull(lp.getTrackManager().getTrack(track)).getGroups().contains(rank)) {
-					Component errorNoRank = mm.deserialize(lang.getProperty("rank.add.norank")
+					Component errorNoRank = Helper.deserializeString(lang.getProperty("rank.add.norank")
 							.replace("<track>", track)
 							.replace("<rank>", rank)
 					);
@@ -210,7 +268,7 @@ public class MainCommand{
 
 			// Check if player is found
 			if (allCols == null || allCols.isEmpty()) {
-				Component noPlayer = mm.deserialize(lang.getProperty("database.playernotfound")
+				Component noPlayer = Helper.deserializeString(lang.getProperty("database.playernotfound")
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 				);
@@ -225,16 +283,17 @@ public class MainCommand{
 
 			List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
 
-			if (temp.contains(rank)) {
+			String rankPrefix = getGroupPrefix(rank);
 
-				Component playermsg = mm.deserialize(lang.getProperty("rank.add.exists")
-						.replace("<rank>", rank)
+			if (temp.contains(rank)) {
+				Component playermsg = Helper.deserializeString(lang.getProperty("rank.add.exists")
+						.replace("<rank>", rankPrefix)
 				);
 
-				Component consolemsg = mm.deserialize(lang.getProperty("rank.add.exists.console")
+				Component consolemsg = Helper.deserializeString(lang.getProperty("rank.add.exists.console")
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
-						.replace("<rank>", rank)
+						.replace("<rank>", rankPrefix)
 				);
 
 				if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
@@ -256,23 +315,23 @@ public class MainCommand{
 			boolean res = updatePlayerData(track, pl, out);
 
 			if (!res) {
-				Component error = mm.deserialize(lang.getProperty("rank.add.failed")
+				Component error = Helper.deserializeString(lang.getProperty("rank.add.failed")
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
-						.replace("<rank>", rank)
+						.replace("<rank>", rankPrefix)
 				);
 				Logger.log(error, sender);
 				return;
 			}
 
-			Component consolemsg = mm.deserialize(lang.getProperty("rank.add.console")
+			Component consolemsg = Helper.deserializeString(lang.getProperty("rank.add.console")
 					.replace("<player>", pl.getName())
 					.replace("<track>", track)
-					.replace("<rank>", rank)
+					.replace("<rank>", rankPrefix)
 			);
 
-			Component playermsg = mm.deserialize(lang.getProperty("rank.add")
-					.replace("<rank>", rank)
+			Component playermsg = Helper.deserializeString(lang.getProperty("rank.add")
+					.replace("<rank>", rankPrefix)
 			);
 
 			if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
@@ -293,12 +352,17 @@ public class MainCommand{
 
 			if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
 
+			// check if the track is in config
+			if (!isTrackInConfig(sender,track)) {
+				return;
+			}
+
 			// Remove rank from player
 			List<Column> allData = getPlayerDatas(pl, track);
 
 			// Check if player is found
 			if (allData == null || allData.isEmpty()) {
-				Component noPlayer = mm.deserialize(lang.getProperty("database.playernotfound")
+				Component noPlayer = Helper.deserializeString(lang.getProperty("database.playernotfound")
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 				);
@@ -313,11 +377,13 @@ public class MainCommand{
 
 			List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
 
+			String rankPrefix = getGroupPrefix(rank);
+
 			if (!temp.contains(rank)) {
-				Component consolemsg = mm.deserialize(lang.getProperty("rank.remove.doesntexist")
+				Component consolemsg = Helper.deserializeString(lang.getProperty("rank.remove.doesntexist")
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
-						.replace("<rank>", rank)
+						.replace("<rank>", rankPrefix)
 				);
 
 				Logger.log(consolemsg, sender);
@@ -341,23 +407,33 @@ public class MainCommand{
 			boolean res = updatePlayerData(track, pl, out);
 
 			if (!res) {
-				Component error = mm.deserialize(lang.getProperty("rank.remove.failed")
+				Component error = Helper.deserializeString(lang.getProperty("rank.remove.failed")
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
-						.replace("<rank>", rank)
+						.replace("<rank>", rankPrefix)
 				);
 				Logger.log(error, sender);
 				return;
 			}
 
-			Component playermsg = mm.deserialize(lang.getProperty("rank.remove")
-					.replace("<rank>", rank)
+			Column setRank = Helper.findColumn(allData, "selectedrank");
+			assert setRank != null;
+
+			if (setRank.getValue().toString().equalsIgnoreCase(rank)) {
+				setRank.setValue("");
+				out.clear();
+				out.add(setRank);
+				updatePlayerData(track, pl, out);
+			}
+
+			Component playermsg = Helper.deserializeString(lang.getProperty("rank.remove")
+					.replace("<rank>", rankPrefix)
 			);
 
-			Component consolemsg = mm.deserialize(lang.getProperty("rank.remove.console")
+			Component consolemsg = Helper.deserializeString(lang.getProperty("rank.remove.console")
 					.replace("<player>", pl.getName())
 					.replace("<track>", track)
-					.replace("<rank>", rank)
+					.replace("<rank>", rankPrefix)
 			);
 
 			if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
@@ -370,9 +446,16 @@ public class MainCommand{
 			@Command(value = "self")
 			@Permission("cosmeticranks.rank.set")
 			public void setRank(Player sender, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
+				// check if the track is in config
+				if (!isTrackInConfig(sender,track)) {
+					return;
+				}
+
+				String rankPrefix = getGroupPrefix(rank);
+
 				Logger.log(Component.text("Set rank for self"), sender);
 				Logger.log(Component.text("Track : " + track), sender);
-				Logger.log(Component.text("Rank : " + rank), sender);
+				Logger.log(Component.text("Rank : " + rankPrefix), sender);
 			}
 
 			@Command(value = "other")
@@ -382,38 +465,111 @@ public class MainCommand{
 
 				if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
 
+				// check if the track is in config
+				if (!isTrackInConfig(sender,track)) {
+					return;
+				}
+
+				String rankPrefix = getGroupPrefix(rank);
+
 
 				Logger.log(Component.text("Set rank for other player"), sender);
 				Logger.log(Component.text("Player : " + pl.getName()), sender);
 				Logger.log(Component.text("Track : " + track), sender);
-				Logger.log(Component.text("Rank : " + rank), sender);
+				Logger.log(Component.text("Rank : " + rankPrefix), sender);
 			}
 		}
 
+
 		@Command("clear")
 		@Permission("cosmeticranks.rank.clear")
-		public void clearRank(CommandSender sender, @Optional @Suggestion("allplayers") String player) {
+		public void clearRank(CommandSender sender, @Suggestion("lptracks") String track, @Optional @Suggestion("allplayers") String player) {
 			OfflinePlayer pl;
 
 			if (player == null) {
 				if (sender instanceof Player) {
 					pl = (Player) sender;
+					if (pl.getName() == null) return; // frick you for providing unknown player
 				}
 				else {
-					Logger.log(Component.text("You must specify a player").color(NamedTextColor.DARK_RED), sender);
+					Logger.log(Helper.deserializeString(lang.getProperty("rank.clear.needplayer")), sender);
 					return;
 				}
 			}
 			else {
 				pl = getPlayer(sender, player);
-
 				if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
-
-
 			}
 
-			// Clear all ranks
-			Logger.log(Component.text("Clear all ranks of " + pl.getName()), sender);
+			// check if the track is in config
+			if (!isTrackInConfig(sender,track)) {
+				return;
+			}
+
+			// Clear the current set rank
+			List<Column> allData = getPlayerDatas(pl, track);
+
+			// Check if player is found
+			if (allData == null || allData.isEmpty()) {
+				Component noPlayer = Helper.deserializeString(lang.getProperty("database.playernotfound")
+						.replace("<player>", pl.getName())
+						.replace("<track>", track)
+				);
+
+				Logger.log(noPlayer, sender);
+
+				return;
+			}
+
+			Column selRank = Helper.findColumn(allData, "selectedrank");
+			assert selRank != null;
+
+			String newSel = "";
+			// linked hash map add based on rank weight...then clear based on perms rank
+			List<String> allPermRanks = new ArrayList<>(instance.getMainConfig().getLptracks().get(track).getPermanentranks());
+			if (!allPermRanks.isEmpty()) {
+				Column obtainedRanks = Helper.findColumn(allData, "obtainedranks");
+				assert obtainedRanks != null;
+				for (int i = allPermRanks.size()-1; i>=0; i--) {
+					String temp = allPermRanks.get(i);
+
+					if (obtainedRanks.getValue().toString().contains(temp)) {
+						newSel = temp;
+						break;
+					}
+				}
+			}
+
+			if (selRank.getValue().toString().isEmpty() && newSel.isEmpty()) {
+				Logger.log(Component.text("The selected rank is already empty"), Logger.LogTypes.debug);
+				return;
+			}
+
+			selRank.setValue(newSel);
+			List<Column> out = new ArrayList<Column>() {{
+				add(selRank);
+			}};
+			boolean res = updatePlayerData(track, pl, out);
+
+			if (!res) {
+				Component error = Helper.deserializeString(lang.getProperty("rank.clear.failed")
+						.replace("<player>", pl.getName())
+						.replace("<track>", track)
+				);
+				Logger.log(error, sender);
+				return;
+			}
+
+			Component playermsg = Helper.deserializeString(lang.getProperty("rank.clear"));
+
+			Component consolemsg = Helper.deserializeString(lang.getProperty("rank.clear.console")
+					.replace("<player>", pl.getName())
+					.replace("<track>", track)
+			);
+
+			if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
+			Logger.log(consolemsg, sender);
+
 		}
 
 
