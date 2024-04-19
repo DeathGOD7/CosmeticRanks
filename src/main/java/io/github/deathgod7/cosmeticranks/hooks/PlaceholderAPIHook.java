@@ -4,8 +4,15 @@
 
 package io.github.deathgod7.cosmeticranks.hooks;
 
+import io.github.deathgod7.SE7ENLib.database.component.Column;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
+import io.github.deathgod7.cosmeticranks.utils.Helper;
+import io.github.deathgod7.cosmeticranks.utils.Logger;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import net.kyori.adventure.text.Component;
+import net.luckperms.api.model.group.Group;
+import net.luckperms.api.node.types.PrefixNode;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,28 +46,43 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 		return true; // This is required or else PlaceholderAPI will unregister the Expansion on reload
 	}
 
-	// cr_rank_{player}
+	// cr_rank_{track}_{player}
 
 	@Override
 	public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
-		System.out.println("Params: " + params);
-
+		String out = "";
 		List<String> parms = Arrays.asList(params.split("_"));
 
 		if (!parms.isEmpty()) {
-			if (parms.size() > 2) return ""; // checks for max paramaters = 2
-			else if (parms.size() == 1) {
-				if (parms.get(0).equalsIgnoreCase("rank")) {
-					return "self rank" + ": ???";
+			if (parms.size() > 3) return out; // checks for max paramaters = 3
+			// cr_rank_.....
+			if (parms.get(0).equals("rank")) {
+				if (parms.size() == 2) {
+					String track = parms.get(1);
+					List<Column> allData = instance.getRankManager().getCachedPlayerData().get(player.getUniqueId()).get(track);
+					if (allData == null || allData.isEmpty()) {
+						return out;
+					}
+					Column selRank = Helper.findColumn(allData, "selectedrank");
+					assert selRank != null;
+					out = Helper.getGroupPrefix(selRank.getValue().toString());
+				}
+				else if (parms.size() == 3) {
+					String track = parms.get(1);
+					OfflinePlayer pl = Helper.getPlayer(parms.get(2));
+					if (pl == null) return out;
+					List<Column> allData = instance.getRankManager().getCachedPlayerData().get(pl.getUniqueId()).get(track);
+					if (allData == null || allData.isEmpty()) {
+						return out;
+					}
+					Column selRank = Helper.findColumn(allData, "selectedrank");
+					assert selRank != null;
+					out = Helper.getGroupPrefix(selRank.getValue().toString());
 				}
 			}
-			else {
-				if (parms.get(0).equalsIgnoreCase("rank")) {
-					return "rank of " + parms.get(1) + ": ???" ;
-				}
-			}
+
 		}
 
-		return "";
+		return out;
 	}
 }

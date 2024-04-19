@@ -9,30 +9,45 @@ import io.github.deathgod7.SE7ENLib.database.DatabaseManager.DataType;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager.DatabaseType;
 import io.github.deathgod7.SE7ENLib.database.component.Column;
 import io.github.deathgod7.SE7ENLib.database.component.Table;
+import io.github.deathgod7.SE7ENLib.database.dbtype.mongodb.MongoDB;
+import io.github.deathgod7.SE7ENLib.database.dbtype.mysql.MySQL;
+import io.github.deathgod7.SE7ENLib.database.dbtype.sqlite.SQLite;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.cosmeticranks.config.TrackConfig;
+import io.github.deathgod7.cosmeticranks.utils.Helper;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.luckperms.api.LuckPerms;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 public class RankManager {
 	CosmeticRanks instance;
 	LuckPerms luckPermsApi;
 
+	DatabaseManager dbm;
+
 	LinkedHashMap<String, Table> ranksTable = new LinkedHashMap<>();
 	public LinkedHashMap<String, Table> getRanksTable() {
 		return ranksTable;
 	}
+
+	LinkedHashMap<UUID, LinkedHashMap<String, List<Column>>> cachedPlayerData;
+	public LinkedHashMap<UUID, LinkedHashMap<String, List<Column>>> getCachedPlayerData() {
+		return cachedPlayerData;
+	}
+
 	public RankManager(CosmeticRanks ins) {
 		this.instance = ins;
 		this.luckPermsApi = instance.getLuckPerms();
+		this.dbm = instance.getDBM();
 		this.createRanksTable();
 		this.loadRanksTable();
+		this.loadPlayerData();
+
 	}
 
 	public void createRanksTable() {
@@ -54,13 +69,6 @@ public class RankManager {
 
 			Table newtable = new Table(k, uuid, columns);
 
-			////////////////////////////////////
-
-			// REMOVE THE PRINT IN SE7ENLIB  //
-
-			///////////////////////////////////
-
-			DatabaseManager dbm = this.instance.getDBM();
 			DatabaseType dbtype = dbm.getDbInfo().getDbType();
 			if (dbtype == DatabaseType.MySQL) {
 				dbm.getMySQL().createTable(newtable, dbtype);
@@ -73,7 +81,6 @@ public class RankManager {
 	}
 
 	public void loadRanksTable() {
-		DatabaseManager dbm = this.instance.getDBM();
 		LinkedHashMap<String, TrackConfig> lptracksHM = this.instance.getMainConfig().getLptracks();
 		for (String k : lptracksHM.keySet())
 		{
@@ -97,4 +104,23 @@ public class RankManager {
 		ranksTable.clear();
 		this.loadRanksTable();
 	}
+	public void loadPlayerData() {
+		cachedPlayerData = new LinkedHashMap<>();
+
+		for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
+			LinkedHashMap<String, List<Column>> playerData = new LinkedHashMap<>();
+			for (String tracks : ranksTable.keySet()) {
+				List<Column> allCols = Helper.getPlayerDatas(player, tracks);
+				playerData.put(tracks, allCols);
+			}
+			cachedPlayerData.put(player.getUniqueId(), playerData);
+		}
+	}
+
+	public void updatePlayerData(UUID uuid, String track, List<Column> data) {
+		LinkedHashMap<String, List<Column>> playerData = cachedPlayerData.get(uuid);
+		playerData.put(track, data);
+		cachedPlayerData.put(uuid, playerData);
+	}
+
 }

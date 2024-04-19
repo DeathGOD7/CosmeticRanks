@@ -15,6 +15,7 @@ import io.github.deathgod7.SE7ENLib.database.dbtype.mongodb.MongoDB;
 import io.github.deathgod7.SE7ENLib.database.dbtype.mysql.MySQL;
 import io.github.deathgod7.SE7ENLib.database.dbtype.sqlite.SQLite;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
+import io.github.deathgod7.cosmeticranks.ranks.RankManager;
 import io.github.deathgod7.cosmeticranks.utils.Helper;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
@@ -46,6 +47,7 @@ public class MainCommand{
 	private final DatabaseManager dbm;
 	private final String pluginPrefix;
 	private final Properties lang;
+	private final RankManager rankManager;
 
 	public MainCommand() {
 		this.instance = CosmeticRanks.getInstance();
@@ -54,6 +56,7 @@ public class MainCommand{
 		this.audiences = CosmeticRanks.getInstance().adventure();
 		this.mm = instance.getMiniMessage();
 		this.lang = instance.getLanguageFile();
+		this.rankManager = instance.getRankManager();
 		this.pluginPrefix = instance.getLanguageFile().getProperty("plugin.msgprefix")
 				.replace("<prefix>", instance.getMainConfig().getPrefix());
 	}
@@ -120,6 +123,14 @@ public class MainCommand{
 		audiences.sender(commandSender).sendMessage(Component.text("API Version : ").color(NamedTextColor.GRAY).append(apiversion));
 		audiences.sender(commandSender).sendMessage(Component.text("Database : ").color(NamedTextColor.GRAY).append(databaseType));
 		audiences.sender(commandSender).sendMessage(Component.text("Status : ").color(NamedTextColor.GRAY).append(isConnected));
+
+		if (!(commandSender instanceof ConsoleCommandSender)) {
+			Player p = (Player) commandSender;
+			rankManager.getCachedPlayerData().get(p.getUniqueId()).get("events").forEach(c -> {
+				commandSender.sendMessage(c.getName() + " : " + c.getValue());
+			});
+		}
+
 	}
 
 	@Command("reload")
@@ -133,24 +144,6 @@ public class MainCommand{
 		// reload
 
 		audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(success));
-	}
-
-
-	public List<Column> getPlayerDatas(OfflinePlayer player, String table) {
-		Column uuid = new Column("uuid", player.getUniqueId().toString(), DatabaseManager.DataType.VARCHAR);
-		List<Column> allCols = null;
-
-		if (dbm.getDatabase() instanceof SQLite) {
-			allCols = dbm.getSQLite().getExactData(table, uuid);
-		}
-		else if (dbm.getDatabase() instanceof MySQL) {
-			allCols = dbm.getMySQL().getExactData(table, uuid);
-		}
-		else if (dbm.getDatabase() instanceof MongoDB) {
-			allCols = dbm.getMongoDB().getExactData(table, uuid);
-		}
-
-		return allCols;
 	}
 
 	public boolean updatePlayerData(String table, OfflinePlayer player, List<Column> columns) {
@@ -197,41 +190,6 @@ public class MainCommand{
 		return res;
 	}
 
-	public String getGroupDisplayName(String group) {
-		Group rankgroup = lp.getGroupManager().getGroup(group);
-
-		if (rankgroup == null) {
-			Logger.log(Component.text(lang.getProperty("group.notfound").replace("<group>", group)), Logger.LogTypes.debug);
-			return "???";
-		}
-
-		String out = rankgroup.getDisplayName();
-		if (out == null) {
-			out = StringUtils.capitalize(group);
-		}
-
-		return out;
-	}
-	public String getGroupPrefix(String group) {
-		Group rankgroup = lp.getGroupManager().getGroup(group);
-
-		if (rankgroup == null) {
-			Logger.log(Component.text(lang.getProperty("group.notfound").replace("<group>", group)), Logger.LogTypes.debug);
-			return "???";
-		}
-
-		String out = rankgroup.getNodes().stream()
-				.filter(node -> node instanceof PrefixNode)
-				.map(node -> ((PrefixNode) node).getMetaValue())
-				.findFirst().orElse(null);
-
-		if (out == null) {
-			out = StringUtils.capitalize(group);
-		}
-
-		return out;
-	}
-
 	@Command("rank")
 	@Permission("cosmeticranks.rank")
 	public class RankCommand {
@@ -264,7 +222,7 @@ public class MainCommand{
 			}
 
 			// Add rank to player
-			List<Column> allCols = getPlayerDatas(pl, track);
+			List<Column> allCols = Helper.getPlayerDatas(pl, track);
 
 			// Check if player is found
 			if (allCols == null || allCols.isEmpty()) {
@@ -272,9 +230,7 @@ public class MainCommand{
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
 				);
-
 				Logger.log(noPlayer, sender);
-
 				return;
 			}
 
@@ -283,7 +239,7 @@ public class MainCommand{
 
 			List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
 
-			String rankPrefix = getGroupPrefix(rank);
+			String rankPrefix = Helper.getGroupPrefix(rank);
 
 			if (temp.contains(rank)) {
 				Component playermsg = Helper.deserializeString(lang.getProperty("rank.add.exists")
@@ -324,6 +280,9 @@ public class MainCommand{
 				return;
 			}
 
+			// after success update in cache
+			rankManager.updatePlayerData(pl.getUniqueId(), track, allCols);
+
 			Component consolemsg = Helper.deserializeString(lang.getProperty("rank.add.console")
 					.replace("<player>", pl.getName())
 					.replace("<track>", track)
@@ -358,7 +317,7 @@ public class MainCommand{
 			}
 
 			// Remove rank from player
-			List<Column> allData = getPlayerDatas(pl, track);
+			List<Column> allData = Helper.getPlayerDatas(pl, track);
 
 			// Check if player is found
 			if (allData == null || allData.isEmpty()) {
@@ -377,7 +336,7 @@ public class MainCommand{
 
 			List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
 
-			String rankPrefix = getGroupPrefix(rank);
+			String rankPrefix = Helper.getGroupPrefix(rank);
 
 			if (!temp.contains(rank)) {
 				Component consolemsg = Helper.deserializeString(lang.getProperty("rank.remove.doesntexist")
@@ -416,15 +375,18 @@ public class MainCommand{
 				return;
 			}
 
-			Column setRank = Helper.findColumn(allData, "selectedrank");
-			assert setRank != null;
+			Column selRank = Helper.findColumn(allData, "selectedrank");
+			assert selRank != null;
 
-			if (setRank.getValue().toString().equalsIgnoreCase(rank)) {
-				setRank.setValue("");
+			if (selRank.getValue().toString().equalsIgnoreCase(rank)) {
+				selRank.setValue("");
 				out.clear();
-				out.add(setRank);
+				out.add(selRank);
 				updatePlayerData(track, pl, out);
 			}
+
+			// after success update in cache
+			rankManager.updatePlayerData(pl.getUniqueId(), track, allData);
 
 			Component playermsg = Helper.deserializeString(lang.getProperty("rank.remove")
 					.replace("<rank>", rankPrefix)
@@ -451,11 +413,75 @@ public class MainCommand{
 					return;
 				}
 
-				String rankPrefix = getGroupPrefix(rank);
+				List<Column> allData = Helper.getPlayerDatas(sender, track);
 
-				Logger.log(Component.text("Set rank for self"), sender);
-				Logger.log(Component.text("Track : " + track), sender);
-				Logger.log(Component.text("Rank : " + rankPrefix), sender);
+				// Check if player is found
+				if (allData == null || allData.isEmpty()) {
+					Component noPlayer = Helper.deserializeString(lang.getProperty("database.playernotfound")
+							.replace("<player>", sender.getName())
+							.replace("<track>", track)
+					);
+
+					Logger.log(noPlayer, sender);
+
+					return;
+				}
+
+				Column colObtainedranks = Helper.findColumn(allData, "obtainedranks");
+				assert colObtainedranks != null;
+
+				List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
+
+				String rankPrefix = Helper.getGroupPrefix(rank);
+
+				if (!temp.contains(rank)) {
+					Component consolemsg = Helper.deserializeString(lang.getProperty("rank.set.doesntexist")
+							.replace("<player>", sender.getName())
+							.replace("<track>", track)
+							.replace("<rank>", rankPrefix)
+					);
+
+					audiences.console().sendMessage(consolemsg);
+					return;
+				}
+
+				Column selRank = Helper.findColumn(allData, "selectedrank");
+				assert selRank != null;
+
+				selRank.setValue(rank);
+
+				List<Column> out = new ArrayList<Column>() {{
+					add(selRank);
+				}};
+
+				boolean res = updatePlayerData(track, sender, out);
+
+				if (!res) {
+					Component error = Helper.deserializeString(lang.getProperty("rank.set.failed")
+							.replace("<player>", sender.getName())
+							.replace("<track>", track)
+							.replace("<rank>", rankPrefix)
+					);
+					Logger.log(error, sender);
+					return;
+				}
+
+				// after success update in cache
+				rankManager.updatePlayerData(sender.getUniqueId(), track, allData);
+
+				Component playermsg = Helper.deserializeString(lang.getProperty("rank.set")
+						.replace("<rank>", rankPrefix)
+				);
+
+				Component consolemsg = Helper.deserializeString(lang.getProperty("rank.set.console")
+						.replace("<player>", sender.getName())
+						.replace("<track>", track)
+						.replace("<rank>", rankPrefix)
+				);
+
+				if (sender.isOnline()) { Logger.sendToPlayer(sender.getPlayer(), playermsg); }
+				Logger.log(consolemsg, sender);
+
 			}
 
 			@Command(value = "other")
@@ -470,13 +496,76 @@ public class MainCommand{
 					return;
 				}
 
-				String rankPrefix = getGroupPrefix(rank);
+				List<Column> allData = Helper.getPlayerDatas(pl, track);
 
+				// Check if player is found
+				if (allData == null || allData.isEmpty()) {
+					Component noPlayer = Helper.deserializeString(lang.getProperty("database.playernotfound")
+							.replace("<player>", sender.getName())
+							.replace("<track>", track)
+					);
 
-				Logger.log(Component.text("Set rank for other player"), sender);
-				Logger.log(Component.text("Player : " + pl.getName()), sender);
-				Logger.log(Component.text("Track : " + track), sender);
-				Logger.log(Component.text("Rank : " + rankPrefix), sender);
+					Logger.log(noPlayer, sender);
+
+					return;
+				}
+
+				Column colObtainedranks = Helper.findColumn(allData, "obtainedranks");
+				assert colObtainedranks != null;
+
+				List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
+
+				String rankPrefix = Helper.getGroupPrefix(rank);
+
+				if (!temp.contains(rank)) {
+					Component consolemsg = Helper.deserializeString(lang.getProperty("rank.set.other.doesntexist")
+							.replace("<player>", pl.getName())
+							.replace("<track>", track)
+							.replace("<rank>", rankPrefix)
+					);
+
+					Logger.log(consolemsg, sender);
+					return;
+				}
+
+				Column selRank = Helper.findColumn(allData, "selectedrank");
+				assert selRank != null;
+
+				selRank.setValue(rank);
+
+				List<Column> out = new ArrayList<Column>() {{
+					add(selRank);
+				}};
+
+				boolean res = updatePlayerData(track, pl, out);
+
+				if (!res) {
+					Component error = Helper.deserializeString(lang.getProperty("rank.set.other.failed")
+							.replace("<player>", sender.getName())
+							.replace("<track>", track)
+							.replace("<rank>", rankPrefix)
+					);
+					Logger.log(error, sender);
+					return;
+				}
+
+				// after success update in cache
+				rankManager.updatePlayerData(pl.getUniqueId(), track, allData);
+
+				Component playermsg = Helper.deserializeString(lang.getProperty("rank.set.other")
+						.replace("<player>", pl.getName())
+						.replace("<rank>", rankPrefix)
+				);
+
+				Component consolemsg = Helper.deserializeString(lang.getProperty("rank.set.other.console")
+						.replace("<sender>", sender.getName())
+						.replace("<player>", pl.getName())
+						.replace("<track>", track)
+						.replace("<rank>", rankPrefix)
+				);
+
+				if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
+				Logger.log(consolemsg, sender);
 			}
 		}
 
@@ -507,7 +596,7 @@ public class MainCommand{
 			}
 
 			// Clear the current set rank
-			List<Column> allData = getPlayerDatas(pl, track);
+			List<Column> allData = Helper.getPlayerDatas(pl, track);
 
 			// Check if player is found
 			if (allData == null || allData.isEmpty()) {
@@ -559,6 +648,9 @@ public class MainCommand{
 				Logger.log(error, sender);
 				return;
 			}
+
+			// after success update in cache
+			rankManager.updatePlayerData(pl.getUniqueId(), track, allData);
 
 			Component playermsg = Helper.deserializeString(lang.getProperty("rank.clear"));
 
