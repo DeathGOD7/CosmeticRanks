@@ -21,7 +21,7 @@
 # language = This will allow you to have custom language file
 prefix: '[CosmeticRanks]'
 version: '1.0.0'
-oldversion: '???'
+old-version: '???'
 language: 'en_US'
 
 # Database support for this plugin either for cross server (bungeecord / velocity or any proxy)
@@ -38,18 +38,32 @@ database:
   # Put your password that you use to access the database. PS : It is top secret high security classified code right?
   password: 'toor'
   # Put the name of database that you want the data to be stored at
-  dbname: 'database'
+  db-name: 'database'
+  # Put the table prefix that you want to use for the plugin
+  table-prefix: 'cranks_'
+  # The pool settings of the database connection (probably useful for MySQL database)
+  # https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
+  pool-settings:
+    # The maximum number of connections that the pool will try to maintain. (Default : 10)
+    max-pool-size: 10
+    # The maximum time in milliseconds that the plugin will wait for a new connection to be established. (Default : 10000 milliseconds)
+    connection-timeout: 10000 # 10 seconds
+    # Set this to match the MySQL's wait_timeout value
+    # You can set this to 0 to disable the idle-timeout (Default : 60000 milliseconds)
+    idle-timeout: 60000 # 1 minute
+    # This property specifies the maximum lifetime of a connection in the pool before it's closed and reestablished.
+    max-lifetime: 1800000 # 30 minutes
 
 # Settings for the tracks of Luck Perms (can have multiple tracks)
 # NOTE : The key in yaml file should match with the track in luck perms (eg: default, donator, staff etc)
-lptracks:
+lp-tracks:
   # The track that you want to use for cosmetic rank
   default:
     # hideLocked = Hide the locked ranks in the GUI (Default : false)
-    hidelocked: 'false'
+    hide-locked: 'false'
     # permanentRanks = The ranks that are permanent and cannot be removed when clearing the ranks prefix (Use [] to disable)
     # Values should be stored from lowest -> highest (Eg : 'default' -> 'donator' -> 'staff' )
-    permanentranks:
+    permanent-ranks:
       - 'default'
     # gui = The row and column number where the item in GUI should be placed
     gui:
@@ -58,8 +72,8 @@ lptracks:
     # name = The name of the track that will be displayed in the GUI
     name: 'Default Ranks'
   events:
-    hidelocked: 'true'
-    permanentranks: []
+    hide-locked: 'true'
+    permanent-ranks: []
     gui:
       row: '3'
       col: '6'

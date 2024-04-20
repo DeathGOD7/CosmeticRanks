@@ -4,6 +4,8 @@
 
 package io.github.deathgod7.cosmeticranks.config;
 
+import io.github.deathgod7.SE7ENLib.database.PoolSettings;
+
 public class DatabaseConfig {
 	// Database Settings
 	String type; //mysql and sqlite and mongodb
@@ -12,20 +14,28 @@ public class DatabaseConfig {
 	String password;
 	String dbname;
 
+	String table_preifx;
+
+	PoolSettings poolSettings;
+
 	public DatabaseConfig() {
 		this.type = "sqlite";
 		this.host = "localhost";
 		this.username = "root";
 		this.password = "toor";
 		this.dbname = "cosmeticranks";
+		this.table_preifx = "cranks_";
+		this.poolSettings = new PoolSettings();
 	}
 
-	public DatabaseConfig(String type, String host, String username, String password, String dbname) {
+	public DatabaseConfig(String type, String host, String username, String password, String dbname, String table_preifx, PoolSettings poolSettings) {
 		this.type = type;
 		this.host = host;
 		this.username = username;
 		this.password = password;
 		this.dbname = dbname;
+		this.table_preifx = table_preifx;
+		this.poolSettings = poolSettings;
 	}
 
 	public void setType(String type) {
@@ -68,6 +78,21 @@ public class DatabaseConfig {
 		return dbname;
 	}
 
+	public void setTablepreifx(String table_preifx) {
+		this.table_preifx = table_preifx;
+	}
+
+	public String getTablepreifx() {
+		return table_preifx;
+	}
+
+	public void setPoolSettings(PoolSettings poolSettings) {
+		this.poolSettings = poolSettings;
+	}
+
+	public PoolSettings getPoolSettings() {
+		return poolSettings;
+	}
 
 
 

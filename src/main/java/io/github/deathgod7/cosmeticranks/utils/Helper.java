@@ -30,6 +30,10 @@ public class Helper {
 		return null; // Column with the specified name not found
 	}
 
+	public static String getTableName(String s) {
+		return CosmeticRanks.getInstance().getMainConfig().getDatabase().getTablepreifx() + s;
+	}
+
 	public static Component deserializeString(String value) {
 		boolean containsLegacyFormattingCharacter = value.indexOf(LegacyComponentSerializer.AMPERSAND_CHAR) != -1
 				|| value.indexOf(LegacyComponentSerializer.SECTION_CHAR) != -1;

@@ -65,7 +65,9 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 					}
 					Column selRank = Helper.findColumn(allData, "selectedrank");
 					assert selRank != null;
-					out = Helper.getGroupPrefix(selRank.getValue().toString());
+					if (!selRank.getValue().toString().isEmpty()) {
+						out = Helper.getGroupPrefix(selRank.getValue().toString());
+					}
 				}
 				else if (parms.size() == 3) {
 					String track = parms.get(1);
@@ -77,7 +79,9 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 					}
 					Column selRank = Helper.findColumn(allData, "selectedrank");
 					assert selRank != null;
-					out = Helper.getGroupPrefix(selRank.getValue().toString());
+					if (!selRank.getValue().toString().isEmpty()) {
+						out = Helper.getGroupPrefix(selRank.getValue().toString());
+					}
 				}
 			}
 

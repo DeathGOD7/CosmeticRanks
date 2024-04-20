@@ -22,7 +22,7 @@ public class MainConfig {
 		this.language = "en_US";
 		this.prefix = "&7[&6CosmeticRanks&7]";
 		this.lptracks = new LinkedHashMap<>();
-		this.database = new DatabaseConfig("sqlite", "localhost", "root", "password", "cosmeticranks");
+		this.database = new DatabaseConfig();
 	}
 
 	public MainConfig(String ver, boolean debug, String language, String prefix, LinkedHashMap<String, TrackConfig> lptracks, DatabaseConfig database) {

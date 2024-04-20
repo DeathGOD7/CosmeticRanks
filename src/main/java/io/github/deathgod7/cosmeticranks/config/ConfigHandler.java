@@ -7,6 +7,7 @@ package io.github.deathgod7.cosmeticranks.config;
 import com.amihaiemil.eoyaml.*;
 import com.amihaiemil.eoyaml.extensions.MergedYamlMapping;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
+import io.github.deathgod7.SE7ENLib.database.PoolSettings;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -47,10 +48,6 @@ public class ConfigHandler {
 		}
 	}
 
-	public void save() {
-		return;
-	}
-
 	public void updateVersion(String ver) {
 		try {
 			YamlMapping yamlMapping = Yaml.createYamlInput(configFile).readYamlMapping();
@@ -61,7 +58,7 @@ public class ConfigHandler {
 					yamlMapping,
 					() -> Yaml.createYamlMappingBuilder()
 							.add("version", ver)
-							.add("oldversion", temp)
+							.add("old-version", temp)
 							.build(),
 					true
 			);
@@ -93,36 +90,45 @@ public class ConfigHandler {
 
 	public void load() {
 		try {
-			MainConfig mainConfig = new MainConfig();
-			DatabaseConfig databaseConfig = new DatabaseConfig();
-
+			config = new MainConfig();
 			YamlMapping yamlMapping = Yaml.createYamlInput(configFile).readYamlMapping();
-			mainConfig.setPluginversion(yamlMapping.string("version"));
-			mainConfig.setDebug(Boolean.parseBoolean(yamlMapping.string("debug")));
-			mainConfig.setLanguage(yamlMapping.string("language"));
-			mainConfig.setPrefix(yamlMapping.string("prefix"));
+			config.setPluginversion(yamlMapping.string("version"));
+			config.setDebug(Boolean.parseBoolean(yamlMapping.string("debug")));
+			config.setLanguage(yamlMapping.string("language"));
+			config.setPrefix(yamlMapping.string("prefix"));
 
+			DatabaseConfig databaseConfig = new DatabaseConfig();
 			YamlMapping db = yamlMapping.yamlMapping("database");
 			databaseConfig.setType(db.string("type"));
 			databaseConfig.setHost(db.string("host"));
 			databaseConfig.setUsername(db.string("username"));
 			databaseConfig.setPassword(db.string("password"));
-			databaseConfig.setDbname(db.string("dbname"));
+			databaseConfig.setDbname(db.string("db-name"));
+			databaseConfig.setTablepreifx(db.string("table-prefix"));
 
-			mainConfig.setDatabase(databaseConfig);
+			PoolSettings poolSettings = new PoolSettings();
+			YamlMapping db_pool = db.yamlMapping("pool-settings");
+			poolSettings.setMaxPoolSize(db_pool.integer("max-pool-size"));
+			poolSettings.setConnectionTimeout(db_pool.longNumber("connection-timeout"));
+			poolSettings.setIdleTimeout(db_pool.longNumber("idle-timeout"));
+			poolSettings.setMaxLifetime(db_pool.longNumber("max-lifetime"));
+
+			databaseConfig.setPoolSettings(poolSettings);
+
+			config.setDatabase(databaseConfig);
 
 			LinkedHashMap<String, TrackConfig> lptracksHM = new LinkedHashMap<>();
-			YamlMapping lptracks = yamlMapping.yamlMapping("lptracks");
+			YamlMapping lptracks = yamlMapping.yamlMapping("lp-tracks");
 
 			for (YamlNode key : lptracks.keys()) {
 				TrackConfig _trackConfig = new TrackConfig();
 
 				YamlMapping _lptrack = lptracks.yamlMapping(key);
 				_trackConfig.setName(_lptrack.string("name"));
-				_trackConfig.setHidelocked(Boolean.parseBoolean(_lptrack.string("hidelocked")));
+				_trackConfig.setHidelocked(Boolean.parseBoolean(_lptrack.string("hide-locked")));
 
 				List<String> permaRanks = new ArrayList<>();
-				YamlSequence permRanks =  _lptrack.yamlSequence("permanentranks");
+				YamlSequence permRanks =  _lptrack.yamlSequence("permanent-ranks");
 				for (int i = 0; i < permRanks.size(); i++) {
 					permaRanks.add(permRanks.string(i));
 				}
@@ -137,9 +143,7 @@ public class ConfigHandler {
 				lptracksHM.put(key.asScalar().value(), _trackConfig);
 			}
 
-			mainConfig.setLptracks(lptracksHM);
-
-			config = mainConfig;
+			config.setLptracks(lptracksHM);
 
 		} catch (IOException ex) {
 			System.out.println("Error loading the config file.\n" + ex.getMessage());

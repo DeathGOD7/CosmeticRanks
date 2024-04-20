@@ -67,7 +67,7 @@ public class RankManager {
 
 			List<Column> columns = Arrays.asList(playername, selectedrank, obtainedranks);
 
-			Table newtable = new Table(k, uuid, columns);
+			Table newtable = new Table(Helper.getTableName(k), uuid, columns);
 
 			DatabaseType dbtype = dbm.getDbInfo().getDbType();
 			if (dbtype == DatabaseType.MySQL) {
@@ -91,11 +91,11 @@ public class RankManager {
 
 			DatabaseType dbtype = dbm.getDbInfo().getDbType();
 			if (dbtype == DatabaseType.MySQL) {
-				ranksTable.put(k, dbm.getMySQL().getTables().get(k));
+				ranksTable.put(k, dbm.getMySQL().getTables().get(Helper.getTableName(k)));
 			} else if (dbtype == DatabaseType.SQLite) {
-				ranksTable.put(k, dbm.getSQLite().getTables().get(k));
+				ranksTable.put(k, dbm.getSQLite().getTables().get(Helper.getTableName(k)));
 			} else if (dbtype == DatabaseType.MongoDB) {
-				ranksTable.put(k, dbm.getMongoDB().getTables().get(k));
+				ranksTable.put(k, dbm.getMongoDB().getTables().get(Helper.getTableName(k)));
 			}
 		}
 	}
@@ -110,7 +110,7 @@ public class RankManager {
 		for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
 			LinkedHashMap<String, List<Column>> playerData = new LinkedHashMap<>();
 			for (String tracks : ranksTable.keySet()) {
-				List<Column> allCols = Helper.getPlayerDatas(player, tracks);
+				List<Column> allCols = Helper.getPlayerDatas(player, ranksTable.get(tracks).getName());
 				playerData.put(tracks, allCols);
 			}
 			cachedPlayerData.put(player.getUniqueId(), playerData);

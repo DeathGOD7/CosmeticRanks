@@ -4,9 +4,11 @@
 
 package io.github.deathgod7.cosmeticranks.database;
 
+import io.github.deathgod7.SE7ENLib.Logger;
 import io.github.deathgod7.SE7ENLib.database.DatabaseInfo;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager.DatabaseType;
+import io.github.deathgod7.SE7ENLib.database.PoolSettings;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.cosmeticranks.config.DatabaseConfig;
 
@@ -32,13 +34,19 @@ public class DatabaseHandler {
 		DatabaseConfig dbConfig = instance.getMainConfig().getDatabase();
 		String dbType = dbConfig.getType();
 
+		PoolSettings poolSettings = new PoolSettings();
+		poolSettings.setMaxPoolSize(dbConfig.getPoolSettings().getMaxPoolSize());
+		poolSettings.setConnectionTimeout(dbConfig.getPoolSettings().getConnectionTimeout());
+		poolSettings.setIdleTimeout(dbConfig.getPoolSettings().getIdleTimeout());
+		poolSettings.setMaxLifetime(dbConfig.getPoolSettings().getMaxLifetime());
+
 		if (dbType.equalsIgnoreCase("mysql")) {
 			dbInfo = new DatabaseInfo(dbConfig.getDbname(), dbConfig.getHost(),
-					dbConfig.getUsername(), dbConfig.getPassword(), DatabaseType.MySQL);
+					dbConfig.getUsername(), dbConfig.getPassword(), DatabaseType.MySQL, poolSettings);
 		}
 		else if (dbType.equalsIgnoreCase("mongodb")) {
 			dbInfo = new DatabaseInfo(dbConfig.getDbname(), dbConfig.getHost(),
-					dbConfig.getUsername(), dbConfig.getPassword(), DatabaseType.MongoDB);
+					dbConfig.getUsername(), dbConfig.getPassword(), DatabaseType.MongoDB, null);
 		}
 		else {
 			Path dbPath = Paths.get(instance.getDataFolder().getPath(), "db");
@@ -46,7 +54,7 @@ public class DatabaseHandler {
 				try {
 					Files.createDirectory(dbPath);
 				} catch (IOException e) {
-					System.out.println(e.getMessage());;
+					Logger.log("[ERROR] " + e.getMessage());
 				}
 			}
 			dbInfo = new DatabaseInfo("databse", dbPath.toString());

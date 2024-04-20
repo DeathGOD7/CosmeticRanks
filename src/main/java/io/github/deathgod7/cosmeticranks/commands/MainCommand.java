@@ -222,7 +222,8 @@ public class MainCommand{
 			}
 
 			// Add rank to player
-			List<Column> allCols = Helper.getPlayerDatas(pl, track);
+			String tablename = instance.getRankManager().getRanksTable().get(track).getName();
+			List<Column> allCols = Helper.getPlayerDatas(pl, tablename);
 
 			// Check if player is found
 			if (allCols == null || allCols.isEmpty()) {
@@ -268,7 +269,7 @@ public class MainCommand{
 				add(colObtainedranks);
 			}};
 
-			boolean res = updatePlayerData(track, pl, out);
+			boolean res = updatePlayerData(tablename, pl, out);
 
 			if (!res) {
 				Component error = Helper.deserializeString(lang.getProperty("rank.add.failed")
@@ -317,7 +318,8 @@ public class MainCommand{
 			}
 
 			// Remove rank from player
-			List<Column> allData = Helper.getPlayerDatas(pl, track);
+			String tablename = instance.getRankManager().getRanksTable().get(track).getName();
+			List<Column> allData = Helper.getPlayerDatas(pl, tablename);
 
 			// Check if player is found
 			if (allData == null || allData.isEmpty()) {
@@ -363,7 +365,7 @@ public class MainCommand{
 				add(colObtainedranks);
 			}};
 
-			boolean res = updatePlayerData(track, pl, out);
+			boolean res = updatePlayerData(tablename, pl, out);
 
 			if (!res) {
 				Component error = Helper.deserializeString(lang.getProperty("rank.remove.failed")
@@ -382,7 +384,7 @@ public class MainCommand{
 				selRank.setValue("");
 				out.clear();
 				out.add(selRank);
-				updatePlayerData(track, pl, out);
+				updatePlayerData(tablename, pl, out);
 			}
 
 			// after success update in cache
@@ -413,7 +415,8 @@ public class MainCommand{
 					return;
 				}
 
-				List<Column> allData = Helper.getPlayerDatas(sender, track);
+				String tablename = instance.getRankManager().getRanksTable().get(track).getName();
+				List<Column> allData = Helper.getPlayerDatas(sender, tablename);
 
 				// Check if player is found
 				if (allData == null || allData.isEmpty()) {
@@ -454,7 +457,7 @@ public class MainCommand{
 					add(selRank);
 				}};
 
-				boolean res = updatePlayerData(track, sender, out);
+				boolean res = updatePlayerData(tablename, sender, out);
 
 				if (!res) {
 					Component error = Helper.deserializeString(lang.getProperty("rank.set.failed")
@@ -496,7 +499,8 @@ public class MainCommand{
 					return;
 				}
 
-				List<Column> allData = Helper.getPlayerDatas(pl, track);
+				String tablename = instance.getRankManager().getRanksTable().get(track).getName();
+				List<Column> allData = Helper.getPlayerDatas(pl, tablename);
 
 				// Check if player is found
 				if (allData == null || allData.isEmpty()) {
@@ -537,7 +541,7 @@ public class MainCommand{
 					add(selRank);
 				}};
 
-				boolean res = updatePlayerData(track, pl, out);
+				boolean res = updatePlayerData(tablename, pl, out);
 
 				if (!res) {
 					Component error = Helper.deserializeString(lang.getProperty("rank.set.other.failed")
@@ -596,7 +600,8 @@ public class MainCommand{
 			}
 
 			// Clear the current set rank
-			List<Column> allData = Helper.getPlayerDatas(pl, track);
+			String tablename = instance.getRankManager().getRanksTable().get(track).getName();
+			List<Column> allData = Helper.getPlayerDatas(pl, tablename);
 
 			// Check if player is found
 			if (allData == null || allData.isEmpty()) {
@@ -638,7 +643,7 @@ public class MainCommand{
 			List<Column> out = new ArrayList<Column>() {{
 				add(selRank);
 			}};
-			boolean res = updatePlayerData(track, pl, out);
+			boolean res = updatePlayerData(tablename, pl, out);
 
 			if (!res) {
 				Component error = Helper.deserializeString(lang.getProperty("rank.clear.failed")
