@@ -17,6 +17,9 @@ repositories {
 	// ---------- [ Paper MC ] ----------
 	maven(url = "https://repo.papermc.io/repository/maven-public/")
 
+	// ---------- [ Github Package ] ----------
+	maven(url = "https://maven.pkg.github.com/DeathGOD7/SE7ENLib")
+
 	// ---------- [ Sonatype ] ----------
 	maven(url = "https://oss.sonatype.org/content/groups/public/")
 
@@ -47,8 +50,8 @@ dependencies {
 	compileOnly("net.luckperms:api:5.4")
 
 	// ---------- [ SE7ENLib ] ----------
-//	compileOnly("com.github.deathgod7:SE7ENLib:master-SNAPSHOT")
-	implementation("io.github.deathgod7:SE7ENLib:1.1.0-SNAPSHOT")
+//	implementation("io.github.deathgod7:SE7ENLib:1.1.0-SNAPSHOT")
+	implementation("io.github.deathgod7:se7enlib:1.1.0-SNAPSHOT")
 
 	// ---------- [ Triumph CMD/GUI ] ----------
 //	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-SNAPSHOT")
