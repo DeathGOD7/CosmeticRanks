@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # makes gradlew executable/runnable (to prevent cannot execute problem)
       - name: Make gradlew executable
@@ -25,7 +25,7 @@ jobs:
 
       # setup JDK 8 for building (for MC 1.8.8)
       - name: Set up JDK 8
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '8'
           distribution: 'temurin'
