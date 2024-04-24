@@ -14,8 +14,8 @@ public class TrackConfig {
 	List<String> permanentranks;
 
 	LinkedHashMap<String, Integer> gui = new LinkedHashMap<>();
-	//gui.add("row", 3);
-	//gui.add("col", 5);
+
+	String iconItem;
 
 	public TrackConfig() {
 		this.name = "default";
@@ -23,14 +23,16 @@ public class TrackConfig {
 		this.permanentranks = Arrays.asList("default", "admin");
 		this.gui.put("row", 3);
 		this.gui.put("col", 5);
+		this.iconItem = "PAPER";
 	}
 
-	public TrackConfig(String name, boolean hidelocked, List<String> permanentranks, int row, int col) {
+	public TrackConfig(String name, boolean hidelocked, List<String> permanentranks, int row, int col, String iconItem) {
 		this.name = name;
 		this.hidelocked = hidelocked;
 		this.permanentranks = permanentranks;
 		this.gui.put("row", row);
 		this.gui.put("col", col);
+		this.iconItem = iconItem;
 	}
 
 	public void setName(String name) {
@@ -65,6 +67,14 @@ public class TrackConfig {
 		return gui;
 	}
 
+
+	public void setIconItem(String iconItem) {
+		this.iconItem = iconItem;
+	}
+
+	public String getIconItem() {
+		return iconItem;
+	}
 
 }
 

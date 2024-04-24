@@ -1,0 +1,32 @@
+# ############################################################################# #
+# +---------------------------------------------------------------------------+ #
+# |                                                                           | #
+# |     ___                       _    _         ___              _           | #
+# |    / __| ___  ___ _ __   ___ | |_ (_) __    | _ \ __ _  _ _  | |__ ___    | #
+# |   | (__ / _ \(_-/| '  \ / -_)|  _|| |/ _|   |   // _` || ' \ | / /(_-/    | #
+# |    \___|\___//__/|_|_|_|\___| \__||_|\__|   |_|_\\__/_||_||_||_\_\/__/    | #
+# |                                                                           | #
+# |                               - Elevate your player experience!           | #
+# |                                                                           | #
+# |                [ Github : https://github.com/DeathGOD7 ]                  | #
+# |        [ Wiki : https://github.com/DeathGOD7/CosmeticRanks/wiki ]         | #
+# |                                                                           | #
+# +---------------------------------------------------------------------------+ #
+# ############################################################################# #
+---
+# This config file is used for GUI only which will provide name and description of rank.
+# Putting your ranks here and hoping it will be added is one of the dumb things to do.
+# You need to add the ranks in Luck Perms tracks if you want it to be obtainable through the plugin.
+ranks:
+  # The rank name which is also known as group name in Luck Perms
+  default:
+    # The display name of the rank/group (Used when showing the rank in GUI)
+    display-name: '<red>Default</red>'
+    # The description of the rank/group, supports multi lines (Used when showing the rank in GUI) (Use [] to have default description)
+    description:
+      - '<yellow>This is the default rank</yellow>'
+  mygroup:
+    display-name: '<rainbow>My Group</rainbow>'
+    description:
+      - '<red>This is the description of my group</red>'
+      - '<blue>This is the second line of the description</blue>'

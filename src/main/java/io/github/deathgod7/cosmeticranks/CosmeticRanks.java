@@ -4,6 +4,7 @@ import dev.triumphteam.cmd.bukkit.BukkitCommandManager;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
 import io.github.deathgod7.cosmeticranks.commands.CommandsHandler;
 import io.github.deathgod7.cosmeticranks.config.ConfigHandler;
+import io.github.deathgod7.cosmeticranks.config.GUIRankHandler;
 import io.github.deathgod7.cosmeticranks.config.MainConfig;
 import io.github.deathgod7.cosmeticranks.database.DatabaseHandler;
 import io.github.deathgod7.cosmeticranks.events.EventsHandler;
@@ -77,6 +78,11 @@ public final class CosmeticRanks extends JavaPlugin {
 		return _configHandler;
 	}
 
+	private GUIRankHandler _guiRankHandler;
+	public GUIRankHandler getGuiRankHandler() {
+		return _guiRankHandler;
+	}
+
 	private RankManager _rankManager;
 	public RankManager getRankManager() {
 		return _rankManager;
@@ -110,6 +116,9 @@ public final class CosmeticRanks extends JavaPlugin {
 		// load main config
 		this._configHandler = new ConfigHandler("config.yml");
 		this._mainConfig = this._configHandler.getConfig();
+
+		// load ranks config
+		this._guiRankHandler = new GUIRankHandler( Paths.get(this.getDataFolder().getPath(),"gui","ranks.yml").toFile());
 
 		// Update the config file if version changed
 		String pVer = CosmeticRanks.getInstance().getDescription().getVersion();

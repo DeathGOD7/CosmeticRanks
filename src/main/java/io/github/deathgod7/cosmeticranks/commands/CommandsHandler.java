@@ -228,7 +228,6 @@ public class CommandsHandler {
 
 	}
 
-
 	List<Column> getPlayerDatas(Player player, Table table) {
 		DatabaseManager dbm = this.instance.getDBM();
 		DatabaseType dbtype = dbm.getDbInfo().getDbType();
@@ -251,5 +250,8 @@ public class CommandsHandler {
 
 		// main commands
 		commandManager.registerCommand(new MainCommand());
+
+		// gui commands
+		commandManager.registerCommand(new GuiCommand());
 	}
 }

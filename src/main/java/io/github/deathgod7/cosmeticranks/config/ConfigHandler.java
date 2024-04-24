@@ -8,6 +8,8 @@ import com.amihaiemil.eoyaml.*;
 import com.amihaiemil.eoyaml.extensions.MergedYamlMapping;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.SE7ENLib.database.PoolSettings;
+import io.github.deathgod7.cosmeticranks.utils.Logger;
+import net.kyori.adventure.text.Component;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -73,7 +75,7 @@ public class ConfigHandler {
 		}
 	}
 
-	public void saveDefaults(InputStream inputStream) {
+	private void saveDefaults(InputStream inputStream) {
 		Path configpath = configFile.toPath();
 		if (Files.notExists(configpath)) {
 			try {
@@ -125,6 +127,7 @@ public class ConfigHandler {
 
 				YamlMapping _lptrack = lptracks.yamlMapping(key);
 				_trackConfig.setName(_lptrack.string("name"));
+				_trackConfig.setIconItem(_lptrack.string("icon-item"));
 				_trackConfig.setHidelocked(Boolean.parseBoolean(_lptrack.string("hide-locked")));
 
 				List<String> permaRanks = new ArrayList<>();
@@ -146,7 +149,8 @@ public class ConfigHandler {
 			config.setLptracks(lptracksHM);
 
 		} catch (IOException ex) {
-			System.out.println("Error loading the config file.\n" + ex.getMessage());
+			Component msg = Component.text("Error loading the config file.\n" + ex.getMessage());
+			Logger.log(msg, Logger.LogTypes.debug);
 		}
 	}
 

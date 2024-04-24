@@ -66,9 +66,15 @@ lp-tracks:
     permanent-ranks:
       - 'default'
     # gui = The row and column number where the item in GUI should be placed
+    # Top left corner is 1,1 and bottom right is 5,9 (since the main gui will be 5x9)...why you ask? I have OCD.
+    # Since there is border around, the row should start from 2 to 4 and column should start from 2 to 8
     gui:
       row: '3'
-      col: '5'
+      col: '4'
+    # icon-item = The material of the item that will be displayed in the GUI of given track.
+    # More info : https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+    # Note : Please use the item name based on the version of the server you are using
+    icon-item: 'STONE'
     # name = The name of the track that will be displayed in the GUI
     name: 'Default Ranks'
   events:
@@ -77,6 +83,7 @@ lp-tracks:
     gui:
       row: '3'
       col: '6'
+    icon-item: 'DIAMOND'
     name: 'Events Ranks'
 
 # Additional settings for the plugin. Useful for debugging the plugin or to find the issue.

@@ -51,10 +51,8 @@ dependencies {
 
 	// ---------- [ SE7ENLib ] ----------
 	implementation("io.github.deathgod7:SE7ENLib:1.1.1-rc1")
-//	implementation("io.github.deathgod7:se7enlib:1.1.0-SNAPSHOT")
 
 	// ---------- [ Triumph CMD/GUI ] ----------
-//	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-SNAPSHOT")
 	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-ALPHA-10")
 	implementation("dev.triumphteam:triumph-gui:3.1.7")
 

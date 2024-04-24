@@ -483,7 +483,7 @@ public class MainCommand{
 				);
 
 				if (sender.isOnline()) { Logger.sendToPlayer(sender.getPlayer(), playermsg); }
-				Logger.log(consolemsg, sender);
+				Logger.log(consolemsg, Logger.LogTypes.log);
 
 			}
 
@@ -590,6 +590,11 @@ public class MainCommand{
 				}
 			}
 			else {
+				if (sender instanceof Player && !sender.hasPermission("cosmeticranks.rank.clear.other")) {
+					audiences.sender(sender).sendMessage(Component.text("You don't have permission to clear other player's rank!!").color(NamedTextColor.DARK_RED));
+					return;
+				}
+
 				pl = getPlayer(sender, player);
 				if (pl == null || pl.getName() == null) return; // frick you for providing unknown player
 			}
