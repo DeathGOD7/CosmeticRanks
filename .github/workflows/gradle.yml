@@ -23,11 +23,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      # setup JDK 8 for building (for MC 1.8.8)
+      # setup JDK 11 for building (still for MC 1.8.8)
       - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
-          java-version: '8'
+          java-version: '11'
           distribution: 'temurin'
 
 #       to fix the said vulnerability of older version than 2.4.2
