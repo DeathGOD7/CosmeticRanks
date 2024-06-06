@@ -22,6 +22,7 @@ import io.github.deathgod7.cosmeticranks.utils.Logger;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.cosmeticranks.ranks.RankManager;
+import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -165,18 +166,20 @@ public class GuiCommand {
 							description.add("The default description of " + rank);
 						}
 
-						assert selectedrank != null;
-						String currentRank = selectedrank.getValue().toString();
+						if (selectedrank != null) {
+							String currentRank = selectedrank.getValue().toString();
 
-						if (currentRank.equals(rank)) {
-							description.add("");
-							description.add(lang.getProperty("gui.rank.current"));
+							if (currentRank.equals(rank)) {
+								description.add("");
+								description.add(lang.getProperty("gui.rank.current"));
+							}
 						}
 
 						Material rankMaterial = Material.NAME_TAG;
 						LinkedList<Component> loreComponents = new LinkedList<>();
 
 						for (String desc : description) {
+							if (instance.isPAPIAvailable()) desc = PlaceholderAPI.setPlaceholders(p, desc);
 							loreComponents.add(Helper.deserializeString(desc).decoration(TextDecoration.ITALIC, false));
 						}
 
@@ -191,6 +194,8 @@ public class GuiCommand {
 						guiRankItem.setAction(event -> {
 							// cr rank set self default default
 							Bukkit.dispatchCommand(p, "cr rank set self " + lptrack + " " + rank);
+							// close the menu
+							subgui.close(p);
 						});
 
 						// finally add it to sub gui
@@ -207,17 +212,51 @@ public class GuiCommand {
 					Logger.log(Component.text("Error while getting obtained ranks"), Logger.LogTypes.debug);
 				}
 
-				// Previous item
-				subgui.setItem(6, 4, ItemBuilder.from(Material.ARROW)
-												.name(Helper.deserializeString(lang.getProperty("gui.previous")).decoration(TextDecoration.ITALIC, false))
-												.glow()
-												.asGuiItem(event -> subgui.previous()));
-				// Next item
-				subgui.setItem(6, 6, ItemBuilder.from(Material.ARROW)
-												.name(Helper.deserializeString(lang.getProperty("gui.next")).decoration(TextDecoration.ITALIC, false))
-												.glow()
-												.asGuiItem(event -> subgui.next()));
+				// Player Head
+				LinkedList<String> pHeadDesc = new LinkedList<>(instance.getGuiRankHandler().getpHeadDescription());
+				LinkedList<Component> pHeadLoreCmp = new LinkedList<>();
 
+				for (String desc : pHeadDesc) {
+					String selRank = "None";
+					if (selectedrank != null) {
+						selRank = selectedrank.getValue().toString();
+						if (selRank.isEmpty()) selRank = "None";
+					}
+					if (instance.getGuiRankHandler().getConfig().containsKey(selRank)) {
+						selRank = instance.getGuiRankHandler().getConfig().get(selRank).getName();
+					}
+
+					desc = desc.replace("<playername>", p.getName())
+						.replace("<rank>", selRank);
+
+					if (instance.isPAPIAvailable())
+						desc = PlaceholderAPI.setPlaceholders(p,desc);
+					pHeadLoreCmp.add(Helper.deserializeString(desc).decoration(TextDecoration.ITALIC, false));
+				}
+
+				ItemBuilder playerHead = ItemBuilder.from(Material.PLAYER_HEAD)
+						.name(Helper.deserializeString(lang.getProperty("gui.playerhead")).decoration(TextDecoration.ITALIC, false))
+						.lore(pHeadLoreCmp)
+						.glow();
+				subgui.setItem(1, 5, playerHead.asGuiItem());
+
+				// Previous item
+				ItemBuilder previousItem = ItemBuilder.from(Material.ARROW)
+						.name(Helper.deserializeString(lang.getProperty("gui.previous")).decoration(TextDecoration.ITALIC, false))
+						.glow();
+				subgui.setItem(6, 3, previousItem.asGuiItem(event -> subgui.previous()));
+
+				// Next item
+				ItemBuilder nextItem = ItemBuilder.from(Material.ARROW)
+						.name(Helper.deserializeString(lang.getProperty("gui.next")).decoration(TextDecoration.ITALIC, false))
+						.glow();
+				subgui.setItem(6, 7, nextItem.asGuiItem(event -> subgui.next()));
+
+				// Back item
+				ItemBuilder backItem = ItemBuilder.from(Material.BARRIER)
+						.name(Helper.deserializeString(lang.getProperty("gui.back")).decoration(TextDecoration.ITALIC, false))
+						.glow();
+				subgui.setItem(6, 5,backItem.asGuiItem(event -> { maingui.open(p);}));
 
 				// maybe show the gui too BOB???
 				subgui.open(p);

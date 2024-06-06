@@ -6,7 +6,7 @@ plugins {
 	id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
-group = "com.github.deathgod7.cosmeticranks"
+group = "io.github.deathgod7.cosmeticranks"
 version = "1.0.0"
 description = "Custom ranks, prestige, and many more... elevate your player experience!"
 
@@ -50,7 +50,7 @@ dependencies {
 	compileOnly("net.luckperms:api:5.4")
 
 	// ---------- [ SE7ENLib ] ----------
-	implementation("io.github.deathgod7:SE7ENLib:1.1.1-rc1")
+	implementation("io.github.deathgod7:SE7ENLib:1.1.1-rc3")
 
 	// ---------- [ Triumph CMD/GUI ] ----------
 	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-ALPHA-10")
@@ -89,9 +89,9 @@ tasks {
 	}
 }
 
-val targetJavaVersion = 8
 val sourceCompatibility = JavaVersion.VERSION_1_8
 val targetCompatibility = JavaVersion.VERSION_1_8
+val targetJavaVersion = 11
 
 java {
 	val javaVersion = JavaVersion.toVersion(targetJavaVersion)
@@ -113,7 +113,7 @@ if (hasProperty("buildScan")) {
 publishing {
 	publications {
 		create<MavenPublication>("maven") {
-			groupId = "com.github.deathgod7"
+			groupId = "io.github.deathgod7"
 			artifactId = "CosmeticRanks"
 			version = "1.0.0"
 

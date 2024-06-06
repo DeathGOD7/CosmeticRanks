@@ -14,15 +14,24 @@
 # +---------------------------------------------------------------------------+ #
 # ############################################################################# #
 ---
-# This config file is used for GUI only which will provide name and description of rank.
+# This config file is used for GUI only which will provide name and description.
 # Putting your ranks here and hoping it will be added is one of the dumb things to do.
 # You need to add the ranks in Luck Perms tracks if you want it to be obtainable through the plugin.
+playerhead:
+  # The description of the player head which will be used in GUI (supports multiline) (Use [] to disable it)
+  # Supported plugin placeholder : <playername>, <rank>
+  # Supports PAPI placeholders
+  description:
+    - '<yellow>Name : <playername></yellow>'
+    - '<gold>Money : Use PAPI of Eco Plugin</gold>'
+    - '<green>Rank : <rank></green>'
 ranks:
   # The rank name which is also known as group name in Luck Perms
   default:
     # The display name of the rank/group (Used when showing the rank in GUI)
     display-name: '<red>Default</red>'
     # The description of the rank/group, supports multi lines (Used when showing the rank in GUI) (Use [] to have default description)
+    # Supports PAPI placeholders
     description:
       - '<yellow>This is the default rank</yellow>'
   mygroup:

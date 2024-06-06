@@ -93,6 +93,11 @@ public final class CosmeticRanks extends JavaPlugin {
 		return _placeholderAPIHook;
 	}
 
+	private boolean _isPAPIAvailable;
+	public boolean isPAPIAvailable() {
+		return _isPAPIAvailable;
+	}
+
 	@Override
 	public void onEnable() {
 		_instance = this;
@@ -162,6 +167,7 @@ public final class CosmeticRanks extends JavaPlugin {
 
 		// register placehoder api
 		if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+			_isPAPIAvailable = true;
 			_placeholderAPIHook = new PlaceholderAPIHook();
 			getPlaceholderAPIHook().register();
 			Logger.log(Component.text("Hooked to PlaceholderAPI successfully").color(NamedTextColor.BLUE), Logger.LogTypes.log);

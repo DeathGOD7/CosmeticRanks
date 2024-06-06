@@ -6,11 +6,9 @@ package io.github.deathgod7.cosmeticranks.commands;
 
 import dev.triumphteam.cmd.bukkit.annotation.Permission;
 import dev.triumphteam.cmd.core.annotations.Optional;
-import dev.triumphteam.cmd.core.command.RootCommand;
 import dev.triumphteam.cmd.core.annotations.*;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
 import io.github.deathgod7.SE7ENLib.database.component.Column;
-import io.github.deathgod7.SE7ENLib.database.component.Table;
 import io.github.deathgod7.SE7ENLib.database.dbtype.mongodb.MongoDB;
 import io.github.deathgod7.SE7ENLib.database.dbtype.mysql.MySQL;
 import io.github.deathgod7.SE7ENLib.database.dbtype.sqlite.SQLite;
@@ -25,15 +23,12 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.group.Group;
-import net.luckperms.api.node.types.PrefixNode;
-import org.apache.commons.lang.StringUtils;
+import net.luckperms.api.node.types.InheritanceNode;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.util.StringUtil;
 
 import java.util.*;
 
@@ -123,13 +118,6 @@ public class MainCommand{
 		audiences.sender(commandSender).sendMessage(Component.text("API Version : ").color(NamedTextColor.GRAY).append(apiversion));
 		audiences.sender(commandSender).sendMessage(Component.text("Database : ").color(NamedTextColor.GRAY).append(databaseType));
 		audiences.sender(commandSender).sendMessage(Component.text("Status : ").color(NamedTextColor.GRAY).append(isConnected));
-
-		if (!(commandSender instanceof ConsoleCommandSender)) {
-			Player p = (Player) commandSender;
-			rankManager.getCachedPlayerData().get(p.getUniqueId()).get("events").forEach(c -> {
-				commandSender.sendMessage(c.getName() + " : " + c.getValue());
-			});
-		}
 
 	}
 
@@ -284,6 +272,13 @@ public class MainCommand{
 			// after success update in cache
 			rankManager.updatePlayerData(pl.getUniqueId(), track, allCols);
 
+			// also add group permission node
+			Group group = lp.getGroupManager().getGroup(rank);
+			if (group != null) {
+				InheritanceNode node = InheritanceNode.builder(rank).build();
+				lp.getUserManager().modifyUser(pl.getUniqueId(), user -> user.data().add(node));
+			}
+
 			Component consolemsg = Helper.deserializeString(lang.getProperty("rank.add.console")
 					.replace("<player>", pl.getName())
 					.replace("<track>", track)
@@ -389,6 +384,13 @@ public class MainCommand{
 
 			// after success update in cache
 			rankManager.updatePlayerData(pl.getUniqueId(), track, allData);
+
+			// also add group permission node
+			Group group = lp.getGroupManager().getGroup(rank);
+			if (group != null) {
+				InheritanceNode node = InheritanceNode.builder(rank).build();
+				lp.getUserManager().modifyUser(pl.getUniqueId(), user -> user.data().remove(node));
+			}
 
 			Component playermsg = Helper.deserializeString(lang.getProperty("rank.remove")
 					.replace("<rank>", rankPrefix)

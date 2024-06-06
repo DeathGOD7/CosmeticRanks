@@ -23,11 +23,14 @@ public class GUIRankHandler {
 	CosmeticRanks instance = CosmeticRanks.getInstance();
 	File configFile;
 
+	LinkedList<String> pHeadDescription;
 	LinkedHashMap<String, GUIRankConfig> config;
 
 	public LinkedHashMap<String, GUIRankConfig> getConfig() {
 		return config;
 	}
+	public LinkedList<String> getpHeadDescription() { return pHeadDescription; }
+
 	public GUIRankHandler(File file) {
 		this.configFile = file;
 		this.checkConfig();
@@ -59,11 +62,19 @@ public class GUIRankHandler {
 
 	public void load() {
 		try {
+			YamlMapping yamlMapping = Yaml.createYamlInput(configFile).readYamlMapping();
+
+			pHeadDescription = new LinkedList<>();
+
+			YamlMapping pHead = yamlMapping.yamlMapping("playerhead");
+			YamlSequence pHeadDescs =  pHead.yamlSequence("description");
+			for (int i = 0; i < pHeadDescs.size(); i++) {
+				pHeadDescription.add(pHeadDescs.string(i));
+			}
+
 			config = new LinkedHashMap<>();
 
-			YamlMapping yamlMapping = Yaml.createYamlInput(configFile).readYamlMapping();
 			YamlMapping ranks = yamlMapping.yamlMapping("ranks");
-
 			for (YamlNode key : ranks.keys()) {
 				GUIRankConfig temp = new GUIRankConfig();
 

@@ -110,6 +110,7 @@ public class ConfigHandler {
 
 			PoolSettings poolSettings = new PoolSettings();
 			YamlMapping db_pool = db.yamlMapping("pool-settings");
+			poolSettings.setMinIdleConnections(db_pool.integer("min-idle-connections"));
 			poolSettings.setMaxPoolSize(db_pool.integer("max-pool-size"));
 			poolSettings.setConnectionTimeout(db_pool.longNumber("connection-timeout"));
 			poolSettings.setIdleTimeout(db_pool.longNumber("idle-timeout"));

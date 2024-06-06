@@ -33,12 +33,7 @@ public class DatabaseHandler {
 		DatabaseInfo dbInfo;
 		DatabaseConfig dbConfig = instance.getMainConfig().getDatabase();
 		String dbType = dbConfig.getType();
-
-		PoolSettings poolSettings = new PoolSettings();
-		poolSettings.setMaxPoolSize(dbConfig.getPoolSettings().getMaxPoolSize());
-		poolSettings.setConnectionTimeout(dbConfig.getPoolSettings().getConnectionTimeout());
-		poolSettings.setIdleTimeout(dbConfig.getPoolSettings().getIdleTimeout());
-		poolSettings.setMaxLifetime(dbConfig.getPoolSettings().getMaxLifetime());
+		PoolSettings poolSettings = dbConfig.getPoolSettings();
 
 		if (dbType.equalsIgnoreCase("mysql")) {
 			dbInfo = new DatabaseInfo(dbConfig.getDbname(), dbConfig.getHost(),
@@ -54,7 +49,7 @@ public class DatabaseHandler {
 				try {
 					Files.createDirectory(dbPath);
 				} catch (IOException e) {
-					Logger.log("[ERROR] " + e.getMessage());
+					Logger.log("[ERROR -> DB CON] " + e.getMessage());
 				}
 			}
 			dbInfo = new DatabaseInfo("databse", dbPath.toString());

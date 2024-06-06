@@ -44,14 +44,16 @@ database:
   # The pool settings of the database connection (probably useful for MySQL database... maybe for SQLite too?
   # https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
   pool-settings:
-    # The maximum number of connections that the pool will try to maintain. (Default : 10)
+    # The minimum number of idle connections that the pool will try to maintain. (Default : 5)
+    min-idle-connections: 5
+    # The maximum number of connections that the pool can have. (Default : 10)
     max-pool-size: 10
     # The maximum time in milliseconds that the plugin will wait for a new connection to be established. (Default : 5000 milliseconds)
     connection-timeout: 5000 # 5 seconds
     # Set this to be less than or near equal to the MySQL's wait_timeout value
     # You can set this to 0 to disable the idle-timeout (Default : 60000 milliseconds)
     idle-timeout: 60000 # 1 minute
-    # This property specifies the maximum lifetime of a connection in the pool before it's closed and reestablished.
+    # This property specifies the maximum lifetime of a connection in the pool before it's closed and new one is reestablished.
     max-lifetime: 1800000 # 30 minutes
 
 # Settings for the tracks of Luck Perms (can have multiple tracks)
