@@ -52,11 +52,11 @@ public class RankManager {
 
 	public void createRanksTable() {
 		LinkedHashMap<String, TrackConfig> lptracksHM = this.instance.getMainConfig().getLptracks();
-		for (String k : lptracksHM.keySet())
+		for (String track : lptracksHM.keySet())
 		{
-			System.out.println("Creating table for " + k);
-			if (luckPermsApi.getTrackManager().getTrack(k) == null) {
-				Logger.log(Component.text("[CREATE Track] Track " + k + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
+			Logger.log(Component.text("Creating table for " + track + " track").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
+			if (luckPermsApi.getTrackManager().getTrack(track) == null) {
+				Logger.log(Component.text("[CREATE Track] Track " + track + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
 				continue;
 			}
 
@@ -67,7 +67,7 @@ public class RankManager {
 
 			List<Column> columns = Arrays.asList(playername, selectedrank, obtainedranks);
 
-			Table newtable = new Table(Helper.getTableName(k), uuid, columns);
+			Table newtable = new Table(Helper.getTableName(track), uuid, columns);
 
 			DatabaseType dbtype = dbm.getDbInfo().getDbType();
 			if (dbtype == DatabaseType.MySQL) {
@@ -82,20 +82,21 @@ public class RankManager {
 
 	public void loadRanksTable() {
 		LinkedHashMap<String, TrackConfig> lptracksHM = this.instance.getMainConfig().getLptracks();
-		for (String k : lptracksHM.keySet())
+		for (String track : lptracksHM.keySet())
 		{
-			if (luckPermsApi.getTrackManager().getTrack(k) == null) {
-				Logger.log(Component.text("[LOAD Track] Track " + k + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
+			Logger.log(Component.text("Loading table of " + track + " track").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
+			if (luckPermsApi.getTrackManager().getTrack(track) == null) {
+				Logger.log(Component.text("[LOAD Track] Track " + track + " not found in LuckPerms").color(NamedTextColor.GOLD), Logger.LogTypes.debug);
 				continue;
 			}
 
 			DatabaseType dbtype = dbm.getDbInfo().getDbType();
 			if (dbtype == DatabaseType.MySQL) {
-				ranksTable.put(k, dbm.getMySQL().getTables().get(Helper.getTableName(k)));
+				ranksTable.put(track, dbm.getMySQL().getTables().get(Helper.getTableName(track)));
 			} else if (dbtype == DatabaseType.SQLite) {
-				ranksTable.put(k, dbm.getSQLite().getTables().get(Helper.getTableName(k)));
+				ranksTable.put(track, dbm.getSQLite().getTables().get(Helper.getTableName(track)));
 			} else if (dbtype == DatabaseType.MongoDB) {
-				ranksTable.put(k, dbm.getMongoDB().getTables().get(Helper.getTableName(k)));
+				ranksTable.put(track, dbm.getMongoDB().getTables().get(Helper.getTableName(track)));
 			}
 		}
 	}
@@ -109,9 +110,9 @@ public class RankManager {
 
 		for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
 			LinkedHashMap<String, List<Column>> playerData = new LinkedHashMap<>();
-			for (String tracks : ranksTable.keySet()) {
-				List<Column> allCols = Helper.getPlayerDatas(player, ranksTable.get(tracks).getName());
-				playerData.put(tracks, allCols);
+			for (String track : ranksTable.keySet()) {
+				List<Column> allCols = Helper.getPlayerDatas(player, ranksTable.get(track).getName());
+				playerData.put(track, allCols);
 			}
 			cachedPlayerData.put(player.getUniqueId(), playerData);
 		}

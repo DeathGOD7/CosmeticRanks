@@ -4,6 +4,9 @@
 *.db
 *.se7en
 
+# Project Icon
+!.idea/icon.*
+
 # IntelliJ
 out/
 .idea/

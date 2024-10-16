@@ -25,7 +25,7 @@ old-version: '???'
 language: 'en_US'
 
 # Database support for this plugin either for cross server (bungeecord / velocity or any proxy)
-# or for data-storage / safe-keeping campaign. We go you covered fam!!
+# or for data-storage / safe-keeping campaign. We got you covered!!
 database:
   # You can choose database type for either of these types
   # type = mysql, sqlite, mongodb (Default : sqlite)

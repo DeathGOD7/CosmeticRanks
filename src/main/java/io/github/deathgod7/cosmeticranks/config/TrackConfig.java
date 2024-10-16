@@ -1,5 +1,5 @@
 // This file is part of CosmeticRanks, created on 26/10/2023 (16:40 PM)
-// Name : MainConfig
+// Name : TrackConfig
 // Author : Death GOD 7
 
 package io.github.deathgod7.cosmeticranks.config;
