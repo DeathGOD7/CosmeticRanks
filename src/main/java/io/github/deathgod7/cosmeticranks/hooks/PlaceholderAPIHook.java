@@ -8,6 +8,7 @@ import io.github.deathgod7.SE7ENLib.database.component.Column;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.cosmeticranks.utils.Helper;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import net.kyori.adventure.text.Component;
 import net.luckperms.api.model.group.Group;
@@ -38,7 +39,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 
 	@Override
 	public @NotNull String getVersion() {
-		return "1.0.0";
+		return "1.0.1";
 	}
 
 	@Override
@@ -55,8 +56,9 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 
 		if (!parms.isEmpty()) {
 			if (parms.size() > 3) return out; // checks for max paramaters = 3
-			// cr_rank_.....
+			// cr_{rank}_...
 			if (parms.get(0).equals("rank")) {
+				// cr_rank_{testtrack}
 				if (parms.size() == 2) {
 					String track = parms.get(1);
 					List<Column> allData = instance.getRankManager().getCachedPlayerData().get(player.getUniqueId()).get(track);
@@ -69,6 +71,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 						out = Helper.getGroupPrefix(selRank.getValue().toString());
 					}
 				}
+				// cr_rank_{testtrack}_{player}
 				else if (parms.size() == 3) {
 					String track = parms.get(1);
 					OfflinePlayer pl = Helper.getPlayer(parms.get(2));
@@ -86,6 +89,10 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 			}
 
 		}
+
+		// PAPI Parse again for the output from LP prefix
+		// To add compatibility for Custom Rank Prefixes Images (e.g. from ItemAdder or Oraxen)
+		out = PlaceholderAPI.setPlaceholders(player, out);
 
 		return out;
 	}

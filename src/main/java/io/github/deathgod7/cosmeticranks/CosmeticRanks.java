@@ -1,6 +1,5 @@
 package io.github.deathgod7.cosmeticranks;
 
-import dev.triumphteam.cmd.bukkit.BukkitCommandManager;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
 import io.github.deathgod7.cosmeticranks.commands.CommandsHandler;
 import io.github.deathgod7.cosmeticranks.config.ConfigHandler;
@@ -18,7 +17,6 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -98,6 +96,22 @@ public final class CosmeticRanks extends JavaPlugin {
 		return _isPAPIAvailable;
 	}
 
+	String prefix;
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public boolean debugMode = false;
+
+	String logPrefix;
+	public String getLogPrefix() {
+		return logPrefix;
+	}
+	String msgPrefix;
+	public String getMsgPrefix() {
+		return msgPrefix;
+	}
+
 	@Override
 	public void onEnable() {
 		_instance = this;
@@ -116,8 +130,57 @@ public final class CosmeticRanks extends JavaPlugin {
 
 		_luckPermsApi = LuckPermsProvider.get();
 
+		// load configs
+		this.loadConfigs();
 
-		// plugin startup logic test
+		// load language files
+		this.loadLanguage();
+
+		// update debug mode
+		debugMode = this.getMainConfig().getDebug();
+
+		// load prefixes
+		this.loadPrefixes();
+
+		Logger.log(Component.text("Main config file loaded").color(NamedTextColor.GREEN), Logger.LogTypes.log);
+		Logger.log(Component.text("Language file loaded (" + _mainConfig.getLanguage() + ")").color(NamedTextColor.GREEN), Logger.LogTypes.log);
+		Logger.log(Component.text("Hooked to Luckperms successfully").color(NamedTextColor.GREEN), Logger.LogTypes.log);
+
+		// databse loading
+		DatabaseHandler databaseHandler = new DatabaseHandler();
+		this._dbm = databaseHandler.getDBM();
+		Logger.log(Component.text("Database loaded successfully (" + _mainConfig.getDatabase().getType() + ")").color(NamedTextColor.GREEN), Logger.LogTypes.log);
+
+		// register placehoder api
+		if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+			_isPAPIAvailable = true;
+			_placeholderAPIHook = new PlaceholderAPIHook();
+			getPlaceholderAPIHook().register();
+			Logger.log(Component.text("Hooked to PlaceholderAPI successfully").color(NamedTextColor.BLUE), Logger.LogTypes.log);
+		}
+
+		// rank loading
+		_rankManager = new RankManager(this);
+
+		// register commands
+		CommandsHandler commandsHandler = new CommandsHandler();
+
+		// register events?
+		this.getServer().getPluginManager().registerEvents(new EventsHandler(), this);
+
+	}
+
+	private void loadPrefixes() {
+		prefix = this.getMainConfig().getPrefix();
+
+		logPrefix = this.getLanguageFile().get("plugin.logprefix").toString()
+				.replace("<prefix>", this.getMainConfig().getPrefix());
+
+		msgPrefix = CosmeticRanks.getInstance().getLanguageFile().get("plugin.msgprefix").toString()
+				.replace("<prefix>", CosmeticRanks.getInstance().getMainConfig().getPrefix());
+	}
+
+	private void loadConfigs() {
 		// load main config
 		this._configHandler = new ConfigHandler("config.yml");
 		this._mainConfig = this._configHandler.getConfig();
@@ -130,9 +193,9 @@ public final class CosmeticRanks extends JavaPlugin {
 		if (!this._mainConfig.getPluginversion().equals(pVer)) {
 			this._configHandler.updateVersion(pVer);
 		}
+	}
 
-
-		// load language files
+	private void loadLanguage() {
 		InputStream messagefile;
 		this._languageFile = new Properties();
 
@@ -155,33 +218,6 @@ public final class CosmeticRanks extends JavaPlugin {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-
-		Logger.log(Component.text("Main config file loaded").color(NamedTextColor.GREEN), Logger.LogTypes.log);
-		Logger.log(Component.text("Language file loaded (" + _mainConfig.getLanguage() + ")").color(NamedTextColor.GREEN), Logger.LogTypes.log);
-		Logger.log(Component.text("Hooked to Luckperms successfully").color(NamedTextColor.GREEN), Logger.LogTypes.log);
-
-		// databse loading
-		DatabaseHandler databaseHandler = new DatabaseHandler();
-		this._dbm= databaseHandler.getDBM();
-		Logger.log(Component.text("Database loaded successfully (" + _mainConfig.getDatabase().getType() + ")").color(NamedTextColor.GREEN), Logger.LogTypes.log);
-
-		// register placehoder api
-		if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-			_isPAPIAvailable = true;
-			_placeholderAPIHook = new PlaceholderAPIHook();
-			getPlaceholderAPIHook().register();
-			Logger.log(Component.text("Hooked to PlaceholderAPI successfully").color(NamedTextColor.BLUE), Logger.LogTypes.log);
-		}
-
-		// rank loading
-		_rankManager = new RankManager(this);
-
-		// register commands
-		CommandsHandler commandsHandler = new CommandsHandler();
-
-		// register events?
-		this.getServer().getPluginManager().registerEvents(new EventsHandler(), this);
-
 	}
 
 	@Override
@@ -191,6 +227,31 @@ public final class CosmeticRanks extends JavaPlugin {
 		if(this.adventure != null) {
 			this.adventure.close();
 			this.adventure = null;
+		}
+	}
+
+	public boolean reloadPlugin() {
+		try {
+			// reload configs
+			this.loadConfigs();
+
+			// reload language files
+			this.loadLanguage();
+
+			// load prefixes
+			this.loadPrefixes();
+
+			// reload ranksmanager
+			_rankManager.reloadRanksTable();
+
+			// update debug mode
+			debugMode = this.getMainConfig().getDebug();
+
+			return true;
+		}
+		catch (Exception e) {
+			this.getLogger().severe("Error while reloading the plugin : " + e.getMessage());
+			return false;
 		}
 	}
 }

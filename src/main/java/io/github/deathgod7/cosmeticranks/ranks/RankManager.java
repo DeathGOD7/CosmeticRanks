@@ -103,7 +103,9 @@ public class RankManager {
 
 	public void reloadRanksTable() {
 		ranksTable.clear();
+		//cachedPlayerData.clear();
 		this.loadRanksTable();
+		//this.loadPlayerData();
 	}
 	public void loadPlayerData() {
 		cachedPlayerData = new LinkedHashMap<>();

@@ -40,7 +40,6 @@ public class MainCommand{
 	private final BukkitAudiences audiences;
 	private final MiniMessage mm;
 	private final DatabaseManager dbm;
-	private final String pluginPrefix;
 	private final Properties lang;
 	private final RankManager rankManager;
 
@@ -52,8 +51,7 @@ public class MainCommand{
 		this.mm = instance.getMiniMessage();
 		this.lang = instance.getLanguageFile();
 		this.rankManager = instance.getRankManager();
-		this.pluginPrefix = instance.getLanguageFile().getProperty("plugin.msgprefix")
-				.replace("<prefix>", instance.getMainConfig().getPrefix());
+		//this.pluginPrefix = instance.getMsgPrefix().replace("<prefix>", instance.getPrefix());
 	}
 
 	// -------------------------------------------------------------------
@@ -124,14 +122,18 @@ public class MainCommand{
 	@Command("reload")
 	@Permission("cosmeticranks.use.reload")
 	public void reload(CommandSender commandSender){
+		String pluginPrefix = instance.getMsgPrefix().replace("<prefix>", instance.getPrefix());
 		Component msg = Component.text(instance.getLanguageFile().getProperty("plugin.reload"));
 		Component success = Component.text(instance.getLanguageFile().getProperty("plugin.reload.success"));
+		Component failure = Component.text(instance.getLanguageFile().getProperty("plugin.reload.failed"));
 
 		audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(msg));
 
 		// reload
+		boolean res = instance.reloadPlugin();
 
-		audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(success));
+		if (res) audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(success));
+		else audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(failure));
 	}
 
 	public boolean updatePlayerData(String table, OfflinePlayer player, List<Column> columns) {

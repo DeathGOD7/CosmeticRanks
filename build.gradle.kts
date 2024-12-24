@@ -3,7 +3,8 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
 	id("java")
 	id("maven-publish")
-	id("com.github.johnrengelman.shadow") version "8.1.1"
+	//id("com.github.johnrengelman.shadow") version "8.1.1" // old and unmaintained
+	id("com.gradleup.shadow") version "9.0.0-beta4" // new and maintained version of shadow
 }
 
 group = "io.github.deathgod7.cosmeticranks"
@@ -102,10 +103,10 @@ java {
 	}
 }
 
-if (hasProperty("buildScan")) {
-	extensions.findByName("buildScan")?.withGroovyBuilder {
-		setProperty("termsOfServiceUrl", "https://gradle.com/terms-of-service")
-		setProperty("termsOfServiceAgree", "yes")
+extensions.findByName("develocity")?.withGroovyBuilder {
+	getProperty("buildScan")?.withGroovyBuilder {
+		setProperty("termsOfUseUrl", "https://gradle.com/help/legal-terms-of-use")
+		setProperty("termsOfUseAgree", "yes")
 	}
 }
 

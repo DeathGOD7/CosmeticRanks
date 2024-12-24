@@ -47,7 +47,6 @@ public class GuiCommand {
 	private final BukkitAudiences audiences;
 	private final MiniMessage mm;
 	private final DatabaseManager dbm;
-	private final String pluginPrefix;
 	private Properties lang;
 	private final RankManager rankManager;
 
@@ -63,8 +62,6 @@ public class GuiCommand {
 		this.mm = instance.getMiniMessage();
 		this.lang = instance.getLanguageFile();
 		this.rankManager = instance.getRankManager();
-		this.pluginPrefix = instance.getLanguageFile().getProperty("plugin.msgprefix")
-				.replace("<prefix>", instance.getMainConfig().getPrefix());
 		this.guiTitle = lang.getProperty("gui.title");
 		this.subGuiTitle = lang.getProperty("gui.title.track");
 	}
