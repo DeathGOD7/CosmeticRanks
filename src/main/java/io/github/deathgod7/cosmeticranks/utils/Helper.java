@@ -11,6 +11,7 @@ import io.github.deathgod7.SE7ENLib.database.dbtype.mysql.MySQL;
 import io.github.deathgod7.SE7ENLib.database.dbtype.sqlite.SQLite;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.node.types.PrefixNode;
@@ -41,9 +42,9 @@ public class Helper {
 
 		if (containsLegacyFormattingCharacter) {
 			return LegacyComponentSerializer.legacyAmpersand().deserialize(value).toBuilder()
-					.build();
+					.build().decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
 		} else {
-			return CosmeticRanks.getInstance().getMiniMessage().deserialize(value);
+			return CosmeticRanks.getInstance().getMiniMessage().deserialize(value).decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE);
 		}
 	}
 
@@ -112,13 +113,18 @@ public class Helper {
 
 	public static String parsePlaceholders(OfflinePlayer player, String text) {
 		if (CosmeticRanks.getInstance().isPAPIAvailable()) {
+			int count = 0;
+
 			// Initialize the text with the original value
 			String updatedText = text;
 
 			// Keep resolving placeholders until no more valid placeholders are found
 			while (updatedText.matches(".*%[^%]+%.*")) {
+				if (count > 10) break;
+
 				Logger.log(Component.text("[Helper] Parse PAPI : " + updatedText), Logger.LogTypes.debug);
 				updatedText = PlaceholderAPI.setPlaceholders(player, updatedText);
+				count++;
 			}
 
 			// Set the final resolved text
