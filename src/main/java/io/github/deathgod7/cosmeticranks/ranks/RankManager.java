@@ -9,9 +9,6 @@ import io.github.deathgod7.SE7ENLib.database.DatabaseManager.DataType;
 import io.github.deathgod7.SE7ENLib.database.DatabaseManager.DatabaseType;
 import io.github.deathgod7.SE7ENLib.database.component.Column;
 import io.github.deathgod7.SE7ENLib.database.component.Table;
-import io.github.deathgod7.SE7ENLib.database.dbtype.mongodb.MongoDB;
-import io.github.deathgod7.SE7ENLib.database.dbtype.mysql.MySQL;
-import io.github.deathgod7.SE7ENLib.database.dbtype.sqlite.SQLite;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.cosmeticranks.config.TrackConfig;
 import io.github.deathgod7.cosmeticranks.utils.Helper;
@@ -19,8 +16,8 @@ import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.luckperms.api.LuckPerms;
-import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -46,8 +43,8 @@ public class RankManager {
 		this.dbm = instance.getDBM();
 		this.createRanksTable();
 		this.loadRanksTable();
-		this.loadPlayerData();
-
+		cachedPlayerData = new LinkedHashMap<>();
+		//this.loadPlayerData();
 	}
 
 	public void createRanksTable() {
@@ -103,31 +100,29 @@ public class RankManager {
 
 	public void reloadRanksTable() {
 		ranksTable.clear();
-		//cachedPlayerData.clear();
 		this.loadRanksTable();
-		//this.loadPlayerData();
 	}
-	public void loadPlayerData() {
-		cachedPlayerData = new LinkedHashMap<>();
-
-		for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
-			LinkedHashMap<String, List<Column>> playerData = new LinkedHashMap<>();
-			for (String track : ranksTable.keySet()) {
-				List<Column> allCols = Helper.getPlayerDatas(player, ranksTable.get(track).getName());
-				playerData.put(track, allCols);
-			}
-			cachedPlayerData.put(player.getUniqueId(), playerData);
+	public void loadPlayerData(@NotNull OfflinePlayer player, String tablename) {
+		LinkedHashMap<String, List<Column>> playerData;
+		if (!cachedPlayerData.containsKey(player.getUniqueId())) {
+			playerData = new LinkedHashMap<>();
 		}
+		else {
+			playerData = cachedPlayerData.get(player.getUniqueId());
+		}
+		List<Column> allCols = Helper.getPlayerDatas(player, ranksTable.get(tablename).getName());
+		playerData.put(tablename, allCols);
+		cachedPlayerData.put(player.getUniqueId(), playerData);
 	}
 
-	public void updatePlayerData(UUID uuid, String track, List<Column> data) {
+	public void updatePlayerData(UUID uuid, String tablename, List<Column> data) {
 		LinkedHashMap<String, List<Column>> playerData;
 		if (!cachedPlayerData.containsKey(uuid)) {
 			playerData = new LinkedHashMap<>();
 		}else {
 			playerData = cachedPlayerData.get(uuid);
 		}
-		playerData.put(track, data);
+		playerData.put(tablename, data);
 		cachedPlayerData.put(uuid, playerData);
 	}
 

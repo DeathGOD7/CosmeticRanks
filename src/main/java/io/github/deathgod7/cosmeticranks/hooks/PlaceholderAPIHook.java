@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class PlaceholderAPIHook extends PlaceholderExpansion {
 
@@ -55,36 +56,40 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 		List<String> parms = Arrays.asList(params.split("_"));
 
 		if (!parms.isEmpty()) {
-			if (parms.size() > 3) return out; // checks for max paramaters = 3
+			if (parms.size() > 3 || parms.size() < 2) return out; // checks for max paramaters = 3 or min = 2
 			// cr_{rank}_...
 			if (parms.get(0).equals("rank")) {
 				// cr_rank_{testtrack}
+				String track = parms.get(1);
+				UUID uuid;
 				if (parms.size() == 2) {
-					String track = parms.get(1);
-					List<Column> allData = instance.getRankManager().getCachedPlayerData().get(player.getUniqueId()).get(track);
-					if (allData == null || allData.isEmpty()) {
-						return out;
+					UUID uid1 = player.getUniqueId();
+					if (!instance.getRankManager().getCachedPlayerData().containsKey(uid1) ||
+							!instance.getRankManager().getCachedPlayerData().get(uid1).containsKey(track) ) {
+						instance.getRankManager().loadPlayerData(player, track);
 					}
-					Column selRank = Helper.findColumn(allData, "selectedrank");
-					assert selRank != null;
-					if (!selRank.getValue().toString().isEmpty()) {
-						out = Helper.getGroupPrefix(selRank.getValue().toString());
-					}
+					uuid = uid1;
 				}
 				// cr_rank_{testtrack}_{player}
-				else if (parms.size() == 3) {
-					String track = parms.get(1);
+				else {
 					OfflinePlayer pl = Helper.getPlayer(parms.get(2));
 					if (pl == null) return out;
-					List<Column> allData = instance.getRankManager().getCachedPlayerData().get(pl.getUniqueId()).get(track);
-					if (allData == null || allData.isEmpty()) {
-						return out;
+					UUID uid2 = pl.getUniqueId();
+					if (!instance.getRankManager().getCachedPlayerData().containsKey(uid2) ||
+							!instance.getRankManager().getCachedPlayerData().get(uid2).containsKey(track) ) {
+						instance.getRankManager().loadPlayerData(player, track);
 					}
-					Column selRank = Helper.findColumn(allData, "selectedrank");
-					assert selRank != null;
-					if (!selRank.getValue().toString().isEmpty()) {
-						out = Helper.getGroupPrefix(selRank.getValue().toString());
-					}
+					uuid = uid2;
+				}
+
+				List<Column> allData = instance.getRankManager().getCachedPlayerData().get(uuid).get(track);
+				if (allData == null || allData.isEmpty()) {
+					return out;
+				}
+				Column selRank = Helper.findColumn(allData, "selectedrank");
+				assert selRank != null;
+				if (!selRank.getValue().toString().isEmpty()) {
+					out = Helper.getGroupPrefix(selRank.getValue().toString());
 				}
 			}
 

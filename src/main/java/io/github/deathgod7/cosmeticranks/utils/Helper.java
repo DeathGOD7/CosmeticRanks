@@ -17,6 +17,7 @@ import net.luckperms.api.node.types.PrefixNode;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import me.clip.placeholderapi.PlaceholderAPI;
 
 import java.util.List;
 
@@ -107,6 +108,23 @@ public class Helper {
 			}
 		}
 		return null;
+	}
+
+	public static String parsePlaceholders(OfflinePlayer player, String text) {
+		if (CosmeticRanks.getInstance().isPAPIAvailable()) {
+			// Initialize the text with the original value
+			String updatedText = text;
+
+			// Keep resolving placeholders until no more valid placeholders are found
+			while (updatedText.matches(".*%[^%]+%.*")) {
+				Logger.log(Component.text("[Helper] Parse PAPI : " + updatedText), Logger.LogTypes.debug);
+				updatedText = PlaceholderAPI.setPlaceholders(player, updatedText);
+			}
+
+			// Set the final resolved text
+			return updatedText;
+		}
+		return text;
 	}
 
 }

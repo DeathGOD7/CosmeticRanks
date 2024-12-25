@@ -55,7 +55,7 @@ dependencies {
 
 	// ---------- [ Triumph CMD/GUI ] ----------
 	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-ALPHA-10")
-	implementation("dev.triumphteam:triumph-gui:3.1.7")
+	implementation("dev.triumphteam:triumph-gui:3.1.11")
 
 	// ---------- [ Adventure ] ----------
 	implementation("net.kyori:adventure-platform-bukkit:4.3.2")

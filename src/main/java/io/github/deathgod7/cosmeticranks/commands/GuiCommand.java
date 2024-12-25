@@ -7,10 +7,7 @@ package io.github.deathgod7.cosmeticranks.commands;
 import dev.triumphteam.cmd.bukkit.annotation.Permission;
 import dev.triumphteam.cmd.core.annotations.Command;
 import dev.triumphteam.cmd.core.annotations.Optional;
-import dev.triumphteam.cmd.core.annotations.Suggestion;
-import dev.triumphteam.cmd.core.extention.meta.MetaKey;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
-import dev.triumphteam.gui.components.GuiType;
 import dev.triumphteam.gui.components.exception.GuiException;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.Gui;
@@ -19,51 +16,38 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import io.github.deathgod7.SE7ENLib.database.component.Column;
 import io.github.deathgod7.cosmeticranks.utils.Helper;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
-import io.github.deathgod7.SE7ENLib.database.DatabaseManager;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import io.github.deathgod7.cosmeticranks.ranks.RankManager;
-import me.clip.placeholderapi.PlaceholderAPI;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.ItemMeta;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Command(value = "rank", alias = {"ranks", "rankgui", "ranksgui"})
 @Permission("cosmeticranks.use.gui")
 public class GuiCommand {
 	private final CosmeticRanks instance;
-	private final LuckPerms lp;
-	private final BukkitAudiences audiences;
-	private final MiniMessage mm;
-	private final DatabaseManager dbm;
-	private Properties lang;
+	private Properties lang() {
+		return CosmeticRanks.getInstance().getLanguageFile();
+	}
 	private final RankManager rankManager;
 
-	private String guiTitle;
+	private String guiTitle() {
+		return lang().getProperty("gui.title");
+	}
 
-	private String subGuiTitle;
+	private String subGuiTitle() {
+		return lang().getProperty("gui.title.track");
+	}
 
 	public GuiCommand() {
 		this.instance = CosmeticRanks.getInstance();
-		this.dbm = instance.getDBM();
-		this.lp = this.instance.getLuckPerms();
-		this.audiences = CosmeticRanks.getInstance().adventure();
-		this.mm = instance.getMiniMessage();
-		this.lang = instance.getLanguageFile();
 		this.rankManager = instance.getRankManager();
-		this.guiTitle = lang.getProperty("gui.title");
-		this.subGuiTitle = lang.getProperty("gui.title.track");
 	}
 
 	// -------------------------------------------------------------------
@@ -73,8 +57,9 @@ public class GuiCommand {
 	@Command
 	public void guiExceutor(CommandSender sender) {
 		if (sender instanceof ConsoleCommandSender) {
-			Component msgTC = instance.getMiniMessage().deserialize(lang.getProperty("error.playeronly"));
-			Logger.log(msgTC, Logger.LogTypes.log);
+			String temp = lang().getProperty("error.playeronly");
+			Component msgTC = instance.getMiniMessage().deserialize(temp);
+			Logger.sendToBoth(msgTC, sender);
 			return;
 		}
 
@@ -82,8 +67,8 @@ public class GuiCommand {
 
 	}
 
-	private void fillGUI(BaseGui gui) {
-		String fillername = lang.getProperty("gui.filler");
+	private void fillGUI(OfflinePlayer p, BaseGui gui) {
+		String fillername = Helper.parsePlaceholders(p, lang().getProperty("gui.filler"));
 		gui.getFiller().fillBorder(
 				Collections.singletonList(
 						ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE)
@@ -100,17 +85,16 @@ public class GuiCommand {
 		else { p = player; }
 
 		Gui maingui = Gui.gui()
-				.title(Helper.deserializeString(guiTitle))
+				.title(Helper.deserializeString(Helper.parsePlaceholders(p, guiTitle())))
 				.rows(5)
 				.disableAllInteractions()
 				.create();
 
-		fillGUI(maingui);
+		fillGUI(p, maingui);
 
-		for (String lptrack : rankManager.getRanksTable().keySet()) {
-			String trackName = instance.getMainConfig().getLptracks().get(lptrack).getName();
-
-			String materialName = instance.getMainConfig().getLptracks().get(lptrack).getIconItem();
+		for (String tableName : rankManager.getRanksTable().keySet()) {
+			String trackName = Helper.parsePlaceholders(p, instance.getMainConfig().getLptracks().get(tableName).getName());
+			String materialName = instance.getMainConfig().getLptracks().get(tableName).getIconItem();
 			Material material;
 			try {
 				material = Material.valueOf(materialName.toUpperCase());
@@ -120,8 +104,8 @@ public class GuiCommand {
 				material = Material.PAPER;
 			}
 
-			int row = instance.getMainConfig().getLptracks().get(lptrack).getGui().get("row");
-			int col = instance.getMainConfig().getLptracks().get(lptrack).getGui().get("col");
+			int row = instance.getMainConfig().getLptracks().get(tableName).getGui().get("row");
+			int col = instance.getMainConfig().getLptracks().get(tableName).getGui().get("col");
 
 			GuiItem guiItem = ItemBuilder.from(material)
 					.name(Helper.deserializeString(trackName).decoration(TextDecoration.ITALIC, false))
@@ -129,7 +113,7 @@ public class GuiCommand {
 					.asGuiItem();
 
 			guiItem.setAction(e -> {
-				String sub_GuiTitle = subGuiTitle.replace("<track>", trackName);
+				String sub_GuiTitle = Helper.parsePlaceholders(p, subGuiTitle().replace("<track>", trackName));
 				PaginatedGui subgui = Gui.paginated()
 						.title(Helper.deserializeString(sub_GuiTitle).decoration(TextDecoration.ITALIC, false))
 						.rows(6)
@@ -137,10 +121,15 @@ public class GuiCommand {
 						.disableAllInteractions()
 						.create();
 
-				fillGUI(subgui);
+				fillGUI(p, subgui);
 
 				// fill items with #addItem(..)
-				List<Column> allDatas = rankManager.getCachedPlayerData().get(p.getUniqueId()).get(lptrack);
+				if (!rankManager.getCachedPlayerData().containsKey(p.getUniqueId()) ||
+						!rankManager.getCachedPlayerData().get(p.getUniqueId()).containsKey(tableName) ) {
+					rankManager.loadPlayerData(p, tableName);
+				}
+
+				List<Column> allDatas = rankManager.getCachedPlayerData().get(p.getUniqueId()).get(tableName);
 				Column obtainedranks = Helper.findColumn(allDatas, "obtainedranks");
 				Column selectedrank = Helper.findColumn(allDatas, "selectedrank");
 
@@ -168,7 +157,7 @@ public class GuiCommand {
 
 							if (currentRank.equals(rank)) {
 								description.add("");
-								description.add(lang.getProperty("gui.rank.current"));
+								description.add(lang().getProperty("gui.rank.current"));
 							}
 						}
 
@@ -176,10 +165,11 @@ public class GuiCommand {
 						LinkedList<Component> loreComponents = new LinkedList<>();
 
 						for (String desc : description) {
-							if (instance.isPAPIAvailable()) desc = PlaceholderAPI.setPlaceholders(p, desc);
+							desc = Helper.parsePlaceholders(p,desc);
 							loreComponents.add(Helper.deserializeString(desc).decoration(TextDecoration.ITALIC, false));
 						}
 
+						rankName = Helper.parsePlaceholders(p, rankName);
 						ItemBuilder ib = ItemBuilder.from(rankMaterial)
 								.name(Helper.deserializeString(rankName).decoration(TextDecoration.ITALIC, false))
 								.glow()
@@ -190,7 +180,7 @@ public class GuiCommand {
 
 						guiRankItem.setAction(event -> {
 							// cr rank set self default default
-							Bukkit.dispatchCommand(p, "cr rank set self " + lptrack + " " + rank);
+							Bukkit.dispatchCommand(p, "cr rank set self " + tableName + " " + rank);
 							// close the menu
 							subgui.close(p);
 						});
@@ -200,7 +190,7 @@ public class GuiCommand {
 							subgui.addItem(guiRankItem);
 						}
 						catch (GuiException ex) {
-							Component f = Component.text("Error while adding items ("+ rank +") to GUI ("+ lptrack +"): " + ex.getMessage());
+							Component f = Component.text("Error while adding items ("+ rank +") to GUI ("+ tableName +"): " + ex.getMessage());
 							Logger.log(f, Logger.LogTypes.debug);
 						}
 					}
@@ -226,32 +216,35 @@ public class GuiCommand {
 					desc = desc.replace("<playername>", p.getName())
 						.replace("<rank>", selRank);
 
-					if (instance.isPAPIAvailable())
-						desc = PlaceholderAPI.setPlaceholders(p,desc);
+					desc = Helper.parsePlaceholders(p,desc);
 					pHeadLoreCmp.add(Helper.deserializeString(desc).decoration(TextDecoration.ITALIC, false));
 				}
 
+				String headname = Helper.parsePlaceholders(p, lang().getProperty("gui.playerhead"));
 				ItemBuilder playerHead = ItemBuilder.from(Material.PLAYER_HEAD)
-						.name(Helper.deserializeString(lang.getProperty("gui.playerhead")).decoration(TextDecoration.ITALIC, false))
+						.name(Helper.deserializeString(headname).decoration(TextDecoration.ITALIC, false))
 						.lore(pHeadLoreCmp)
 						.glow();
 				subgui.setItem(1, 5, playerHead.asGuiItem());
 
 				// Previous item
+				String previousItemname = Helper.parsePlaceholders(p, lang().getProperty("gui.previous"));
 				ItemBuilder previousItem = ItemBuilder.from(Material.ARROW)
-						.name(Helper.deserializeString(lang.getProperty("gui.previous")).decoration(TextDecoration.ITALIC, false))
+						.name(Helper.deserializeString(previousItemname).decoration(TextDecoration.ITALIC, false))
 						.glow();
 				subgui.setItem(6, 3, previousItem.asGuiItem(event -> subgui.previous()));
 
 				// Next item
+				String nextItemname = Helper.parsePlaceholders(p, lang().getProperty("gui.next"));
 				ItemBuilder nextItem = ItemBuilder.from(Material.ARROW)
-						.name(Helper.deserializeString(lang.getProperty("gui.next")).decoration(TextDecoration.ITALIC, false))
+						.name(Helper.deserializeString(nextItemname).decoration(TextDecoration.ITALIC, false))
 						.glow();
 				subgui.setItem(6, 7, nextItem.asGuiItem(event -> subgui.next()));
 
 				// Back item
+				String backItemname = Helper.parsePlaceholders(p, lang().getProperty("gui.back"));
 				ItemBuilder backItem = ItemBuilder.from(Material.BARRIER)
-						.name(Helper.deserializeString(lang.getProperty("gui.back")).decoration(TextDecoration.ITALIC, false))
+						.name(Helper.deserializeString(backItemname).decoration(TextDecoration.ITALIC, false))
 						.glow();
 				subgui.setItem(6, 5,backItem.asGuiItem(event -> { maingui.open(p);}));
 
@@ -265,7 +258,7 @@ public class GuiCommand {
 				maingui.setItem(row, col, guiItem);
 			}
 			catch (GuiException e) {
-				Component f = Component.text("Error while adding items ("+ lptrack +") to GUI(main): " + e.getMessage());
+				Component f = Component.text("Error while adding items ("+ tableName +") to GUI(main): " + e.getMessage());
 				Logger.log(f, Logger.LogTypes.debug);
 			}
 		}
