@@ -52,7 +52,7 @@ public class DatabaseHandler {
 					Logger.log("[ERROR -> DB CON] " + e.getMessage());
 				}
 			}
-			dbInfo = new DatabaseInfo("databse", dbPath.toString());
+			dbInfo = new DatabaseInfo("databse", dbPath.toString(), poolSettings);
 		}
 
 		this._dbm = new DatabaseManager(dbInfo);

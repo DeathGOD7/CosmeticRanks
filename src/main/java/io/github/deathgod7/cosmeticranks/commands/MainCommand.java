@@ -119,18 +119,17 @@ public class MainCommand{
 	@Command("reload")
 	@Permission("cosmeticranks.use.reload")
 	public void reload(CommandSender commandSender){
-		String pluginPrefix = instance.getMsgPrefix().replace("<prefix>", instance.getPrefix());
 		Component msg = Component.text(instance.getLanguageFile().getProperty("plugin.reload"));
 		Component success = Component.text(instance.getLanguageFile().getProperty("plugin.reload.success"));
 		Component failure = Component.text(instance.getLanguageFile().getProperty("plugin.reload.failed"));
 
-		audiences.sender(commandSender).sendMessage(Component.text(pluginPrefix).append(msg));
+		Logger.sendToBoth(msg, commandSender);
 
 		// reload
 		boolean res = instance.reloadPlugin();
 
-		if (res) Logger.sendToBoth(Component.text(pluginPrefix).append(success), commandSender);
-		else Logger.sendToBoth(Component.text(pluginPrefix).append(failure), commandSender);
+		if (res) Logger.sendToBoth(success, commandSender);
+		else Logger.sendToBoth(failure, commandSender);
 	}
 
 	public boolean updatePlayerData(String table, OfflinePlayer player, List<Column> columns) {
