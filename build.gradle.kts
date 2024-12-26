@@ -51,7 +51,7 @@ dependencies {
 	compileOnly("net.luckperms:api:5.4")
 
 	// ---------- [ SE7ENLib ] ----------
-	implementation("io.github.deathgod7:SE7ENLib:1.1.1")
+	implementation("io.github.deathgod7:SE7ENLib:1.1.2-rc1")
 
 	// ---------- [ Triumph CMD/GUI ] ----------
 	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-ALPHA-10")
