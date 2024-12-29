@@ -7,7 +7,7 @@ plugins {
 	id("com.gradleup.shadow") version "9.0.0-beta4" // new and maintained version of shadow
 }
 
-group = "io.github.deathgod7.cosmeticranks"
+group = "io.github.deathgod7"
 version = "1.0.0"
 description = "Custom ranks, prestige, and many more... elevate your player experience!"
 
@@ -15,11 +15,15 @@ repositories {
 	mavenLocal()
 	mavenCentral()
 
+	// ---------- [ SE7ENRepo ] ----------
+	maven(url = "https://repo.sthalokendra.com.np/releases/")
+	maven(url = "https://repo.sthalokendra.com.np/snapshots/")
+
 	// ---------- [ Paper MC ] ----------
 	maven(url = "https://repo.papermc.io/repository/maven-public/")
 
 	// ---------- [ Github Package ] ----------
-	maven(url = "https://maven.pkg.github.com/DeathGOD7/SE7ENLib")
+	// maven(url = "https://maven.pkg.github.com/DeathGOD7/SE7ENLib")
 
 	// ---------- [ Sonatype ] ----------
 	maven(url = "https://oss.sonatype.org/content/groups/public/")
@@ -51,7 +55,7 @@ dependencies {
 	compileOnly("net.luckperms:api:5.4")
 
 	// ---------- [ SE7ENLib ] ----------
-	implementation("io.github.deathgod7:SE7ENLib:1.1.2-rc1")
+	implementation("io.github.deathgod7:SE7ENLib:1.1.2-SNAPSHOT-1")
 
 	// ---------- [ Triumph CMD/GUI ] ----------
 	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-ALPHA-10")
