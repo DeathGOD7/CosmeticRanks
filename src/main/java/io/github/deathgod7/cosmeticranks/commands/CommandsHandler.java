@@ -14,6 +14,7 @@ import io.github.deathgod7.SE7ENLib.database.DatabaseManager.DatabaseType;
 import io.github.deathgod7.SE7ENLib.database.component.Column;
 import io.github.deathgod7.SE7ENLib.database.component.Table;
 import io.github.deathgod7.cosmeticranks.CosmeticRanks;
+import io.github.deathgod7.cosmeticranks.ranks.RankManager;
 import io.github.deathgod7.cosmeticranks.utils.Helper;
 import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.text.Component;
@@ -157,6 +158,8 @@ public class CommandsHandler {
 		// Register suggestions here
 
 		commandManager.registerSuggestion(SuggestionKey.of("allplayers"), (sender, arguments) -> {
+			//System.out.println("allplayers " + arguments.toString());
+
 			List<String> players = new ArrayList<>();
 			for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
 				players.add(p.getName());
@@ -166,11 +169,15 @@ public class CommandsHandler {
 
 		// For the lptracks
 		commandManager.registerSuggestion(SuggestionKey.of("lptracks"), (sender, arguments) -> {
+			//System.out.println("lptracks " + arguments.toString());
+
 			return (List<String>) new ArrayList<String>(instance.getRankManager().getRanksTable().keySet());
 		});
 
 		// For the ranks (all)
 		commandManager.registerSuggestion(SuggestionKey.of("ranks"), (sender, arguments) -> {
+			//System.out.println("ranks " + arguments.toString());
+
 			Set<String> allTracks = instance.getRankManager().getRanksTable().keySet();
 			String lastArg = arguments.get(1);
 
@@ -185,6 +192,8 @@ public class CommandsHandler {
 
 		// For the ranks (obtained)
 		commandManager.registerSuggestion(SuggestionKey.of("obtainedranks"), (sender, arguments) -> {
+			//System.out.println("obtainedranks " + arguments.toString());
+
 			Set<String> allTracks = instance.getRankManager().getRanksTable().keySet();
 			String trackname = "";
 
@@ -211,7 +220,14 @@ public class CommandsHandler {
 
 				if (p == null) { return (List<String>) new ArrayList<String>(); }
 
-				List<Column> datas = getPlayerDatas(p, table);
+				List<Column> datas;
+				RankManager rmg = instance.getRankManager();
+
+				if (!rmg.getCachedPlayerData().containsKey(p.getUniqueId()) || !rmg.getCachedPlayerData().get(p.getUniqueId()).containsKey(trackname)) {
+					rmg.loadPlayerData(p, trackname);
+				}
+
+				datas = rmg.getCachedPlayerData().get(p.getUniqueId()).get(trackname);
 
 				if (datas == null) { return (List<String>) new ArrayList<String>(); }
 				Column colObtainedranks = Helper.findColumn(datas, "obtainedranks");
@@ -226,23 +242,6 @@ public class CommandsHandler {
 			return (List<String>) new ArrayList<String>();
 		});
 
-	}
-
-	List<Column> getPlayerDatas(Player player, Table table) {
-		DatabaseManager dbm = this.instance.getDBM();
-		DatabaseType dbtype = dbm.getDbInfo().getDbType();
-
-		Column pk = table.getPrimaryKey();
-		pk.setValue(player.getUniqueId().toString());
-
-		if (dbtype == DatabaseType.MySQL) {
-			return dbm.getMySQL().getExactData(table.getName(), pk);
-		} else if (dbtype == DatabaseType.SQLite) {
-			return dbm.getSQLite().getExactData(table.getName(), pk);
-		} else if (dbtype == DatabaseType.MongoDB) {
-			return dbm.getMongoDB().getExactData(table.getName(), pk);
-		}
-		else return null;
 	}
 
 	void registerCommands() {
