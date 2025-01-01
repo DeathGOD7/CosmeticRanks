@@ -60,8 +60,8 @@ public class MainCommand{
 		info(sender);
 	}
 
-	@Command("info")
-	@Permission("cosmeticranks.use")
+	@Command(value = "info")
+	@Permission("info")
 	public void info(CommandSender commandSender){
 		TextComponent databaseType;
 		TextComponent isConnected;
@@ -116,8 +116,8 @@ public class MainCommand{
 
 	}
 
-	@Command("reload")
-	@Permission("cosmeticranks.use.reload")
+	@Command(value = "reload")
+	@Permission("reload")
 	public void reload(CommandSender commandSender){
 		Component msg = Component.text(instance.getLanguageFile().getProperty("plugin.reload"));
 		Component success = Component.text(instance.getLanguageFile().getProperty("plugin.reload.success"));
@@ -176,11 +176,11 @@ public class MainCommand{
 		return res;
 	}
 
-	@Command("rank")
-	@Permission("cosmeticranks.rank")
+	@Command(value = "rank")
+	@Permission("rank")
 	public class RankCommand {
 		@Command(value = "add")
-		@Permission("cosmeticranks.rank.add")
+		@Permission("add")
 		public void addRank(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
 			OfflinePlayer pl = getPlayer(sender, player);
 
@@ -296,13 +296,13 @@ public class MainCommand{
 		}
 
 		@Command(value = "give")
-		@Permission("cosmeticranks.rank.add")
+		@Permission("add")
 		public void giveRank(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
 			addRank(sender, player, track, rank);
 		}
 
 		@Command(value = "remove")
-		@Permission("cosmeticranks.rank.remove")
+		@Permission("remove")
 		public void removeRank(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
 			OfflinePlayer pl = getPlayer(sender, player);
 
@@ -411,11 +411,11 @@ public class MainCommand{
 			Logger.sendToBoth(consolemsg, sender);
 		}
 
-		@Command("set")
-		@Permission("cosmeticranks.rank.set")
+		@Command(value = "set")
+		@Permission("set")
 		public class RankSetCommand {
 			@Command(value = "self")
-			@Permission("cosmeticranks.rank.set")
+			@Permission("self")
 			public void setRank(Player sender, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
 				// check if the track is in config
 				if (!isTrackInConfig(sender,track)) {
@@ -499,7 +499,7 @@ public class MainCommand{
 			}
 
 			@Command(value = "other")
-			@Permission("cosmeticranks.rank.set.other")
+			@Permission("other")
 			public void setRankOther(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("obtainedranks") String rank) {
 				OfflinePlayer pl = getPlayer(sender, player);
 
@@ -588,9 +588,8 @@ public class MainCommand{
 			}
 		}
 
-
-		@Command("clear")
-		@Permission("cosmeticranks.rank.clear")
+		@Command(value = "clear")
+		@Permission("clear")
 		public void clearRank(CommandSender sender, @Suggestion("lptracks") String track, @Optional @Suggestion("allplayers") String player) {
 			OfflinePlayer pl;
 
