@@ -64,8 +64,8 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 				UUID uuid;
 				if (parms.size() == 2) {
 					UUID uid1 = player.getUniqueId();
-					if (!instance.getRankManager().getCachedPlayerData().containsKey(uid1) ||
-							!instance.getRankManager().getCachedPlayerData().get(uid1).containsKey(track) ) {
+					if (!instance.getRankManager().getPlayerData(uid1).isEmpty() ||
+							!instance.getRankManager().getPlayerData(uid1).containsKey(track) ) {
 						instance.getRankManager().loadPlayerData(player, track);
 					}
 					uuid = uid1;
@@ -75,14 +75,14 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
 					OfflinePlayer pl = Helper.getPlayer(parms.get(2));
 					if (pl == null) return out;
 					UUID uid2 = pl.getUniqueId();
-					if (!instance.getRankManager().getCachedPlayerData().containsKey(uid2) ||
-							!instance.getRankManager().getCachedPlayerData().get(uid2).containsKey(track) ) {
+					if (!instance.getRankManager().getPlayerData(uid2).isEmpty() ||
+							!instance.getRankManager().getPlayerData(uid2).containsKey(track) ) {
 						instance.getRankManager().loadPlayerData(player, track);
 					}
 					uuid = uid2;
 				}
 
-				List<Column> allData = instance.getRankManager().getCachedPlayerData().get(uuid).get(track);
+				List<Column> allData = instance.getRankManager().getPlayerData(uuid).get(track);
 				if (allData == null || allData.isEmpty()) {
 					return out;
 				}

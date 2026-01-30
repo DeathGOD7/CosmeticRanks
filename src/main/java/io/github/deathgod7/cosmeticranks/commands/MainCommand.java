@@ -179,6 +179,11 @@ public class MainCommand{
 	@Command(value = "rank")
 	@Permission("rank")
 	public class RankCommand {
+
+		private String getRankTableName(String track) {
+			return instance.getRankManager().getRanksTable().get(track).getName();
+		}
+
 		@Command(value = "add")
 		@Permission("add")
 		public void addRank(CommandSender sender, @Suggestion("allplayers") String player, @Suggestion("lptracks") String track, @Suggestion("ranks") String rank) {
@@ -208,56 +213,14 @@ public class MainCommand{
 			}
 
 			// Add rank to player
-			String tablename = instance.getRankManager().getRanksTable().get(track).getName();
-			List<Column> allCols = Helper.getPlayerDatas(pl, tablename);
-
-			// Check if player is found
-			if (allCols == null || allCols.isEmpty()) {
-				Component noPlayer = Helper.deserializeString(lang().getProperty("database.playernotfound")
-						.replace("<player>", pl.getName())
-						.replace("<track>", track)
-				);
-				Logger.sendToBoth(noPlayer, sender);
-				return;
-			}
-
-			Column colObtainedranks = Helper.findColumn(allCols, "obtainedranks");
-			assert colObtainedranks != null;
-
-			List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
-
 			String rankPrefix = Helper.getGroupPrefix(rank);
 
-			if (temp.contains(rank)) {
-				String pp = Helper.parsePlaceholders(pl, lang().getProperty("rank.add.exists").replace("<rank>", rankPrefix));
-				Component playermsg = Helper.deserializeString(pp);
-
-				String cc = lang().getProperty("rank.add.exists.console")
-						.replace("<player>", pl.getName())
-						.replace("<track>", track)
-						.replace("<rank>", rankPrefix);
-				cc = Helper.parsePlaceholders(pl, cc);
-				Component consolemsg = Helper.deserializeString(cc);
-
-				if (pl.isOnline()) { Logger.sendToPlayer(pl.getPlayer(), playermsg); }
-				Logger.sendToBoth(consolemsg, sender);
-
-				return;
-			}
-
-			// remove default empty string
-			temp.remove("");
-			temp.add(rank);
-
-			colObtainedranks.setValue(String.join(",", temp));
-
-			List<Column> out = new ArrayList<Column>() {{
-				add(colObtainedranks);
-			}};
-
-			boolean res = updatePlayerData(tablename, pl, out);
-
-			if (!res) {
+			// add group permission node
+			Group group = lp.getGroupManager().getGroup(rank);
+			if (group != null) {
+				InheritanceNode node = InheritanceNode.builder(rank).build();
+				lp.getUserManager().modifyUser(pl.getUniqueId(), user -> user.data().add(node));
+			}else {
 				String rAddFail = lang().getProperty("rank.add.failed")
 						.replace("<player>", pl.getName())
 						.replace("<track>", track)
@@ -266,16 +229,6 @@ public class MainCommand{
 				Component error = Helper.deserializeString(rAddFail);
 				Logger.sendToBoth(error, sender);
 				return;
-			}
-
-			// after success update in cache
-			rankManager.updatePlayerData(pl.getUniqueId(), track, allCols);
-
-			// also add group permission node
-			Group group = lp.getGroupManager().getGroup(rank);
-			if (group != null) {
-				InheritanceNode node = InheritanceNode.builder(rank).build();
-				lp.getUserManager().modifyUser(pl.getUniqueId(), user -> user.data().add(node));
 			}
 
 			String rAddS = lang().getProperty("rank.add.console")
@@ -314,8 +267,7 @@ public class MainCommand{
 			}
 
 			// Remove rank from player
-			String tablename = instance.getRankManager().getRanksTable().get(track).getName();
-			List<Column> allData = Helper.getPlayerDatas(pl, tablename);
+			List<Column> allData = Helper.getPlayerDatas(pl, getRankTableName(track));
 
 			// Check if player is found
 			if (allData == null || allData.isEmpty()) {
@@ -329,70 +281,42 @@ public class MainCommand{
 				return;
 			}
 
-			Column colObtainedranks = Helper.findColumn(allData, "obtainedranks");
-			assert colObtainedranks != null;
-
-			List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
-
+			List<Column> out = new ArrayList<Column>();
 			String rankPrefix = Helper.getGroupPrefix(rank);
-
-			if (!temp.contains(rank)) {
-				String tmp1 = lang().getProperty("rank.remove.doesntexist")
-						.replace("<player>", pl.getName())
-						.replace("<track>", track)
-						.replace("<rank>", rankPrefix);
-				tmp1 = Helper.parsePlaceholders(pl, tmp1);
-				Component consolemsg = Helper.deserializeString(tmp1);
-
-				Logger.sendToBoth(consolemsg, sender);
-				return;
-			}
-
-			// remove the rank
-			temp.remove(rank);
-
-			// add default empty string to prevent problems
-			if (temp.isEmpty()) {
-				temp.add("");
-			}
-
-			colObtainedranks.setValue(String.join(",", temp));
-
-			List<Column> out = new ArrayList<Column>() {{
-				add(colObtainedranks);
-			}};
-
-			boolean res = updatePlayerData(tablename, pl, out);
-
-			if (!res) {
-				String tmp2 = lang().getProperty("rank.remove.failed")
-						.replace("<player>", pl.getName())
-						.replace("<track>", track)
-						.replace("<rank>", rankPrefix);
-				tmp2 = Helper.parsePlaceholders(pl,tmp2);
-				Component error = Helper.deserializeString(tmp2);
-				Logger.sendToBoth(error, sender);
-				return;
-			}
 
 			Column selRank = Helper.findColumn(allData, "selectedrank");
 			assert selRank != null;
 
 			if (selRank.getValue().toString().equalsIgnoreCase(rank)) {
 				selRank.setValue("");
-				out.clear();
 				out.add(selRank);
-				updatePlayerData(tablename, pl, out);
+				boolean res = updatePlayerData(getRankTableName(track), pl, out);
+
+				if (!res) {
+					String tmp2 = lang().getProperty("rank.remove.failed")
+							.replace("<player>", pl.getName())
+							.replace("<track>", track)
+							.replace("<rank>", rankPrefix);
+					tmp2 = Helper.parsePlaceholders(pl,tmp2);
+					Component error = Helper.deserializeString(tmp2);
+					Logger.sendToBoth(error, sender);
+					return;
+				}
 			}
 
 			// after success update in cache
-			rankManager.updatePlayerData(pl.getUniqueId(), track, allData);
+			rankManager.updatePlayerCacheData(pl.getUniqueId(), track, allData);
 
 			// also add group permission node
 			Group group = lp.getGroupManager().getGroup(rank);
 			if (group != null) {
 				InheritanceNode node = InheritanceNode.builder(rank).build();
 				lp.getUserManager().modifyUser(pl.getUniqueId(), user -> user.data().remove(node));
+			}
+
+			HashSet<String> obRank = rankManager.getObtainedRanks(pl.getUniqueId()).get(track);
+			if (obRank != null) {
+				obRank.remove(rank);
 			}
 
 			String tmp3 = lang().getProperty("rank.remove")
@@ -423,7 +347,7 @@ public class MainCommand{
 				}
 
 				String tablename = instance.getRankManager().getRanksTable().get(track).getName();
-				List<Column> allData = Helper.getPlayerDatas(sender, tablename);
+				List<Column> allData = Helper.getPlayerDatas(sender, getRankTableName(track));
 
 				// Check if player is found
 				if (allData == null || allData.isEmpty()) {
@@ -437,14 +361,10 @@ public class MainCommand{
 					return;
 				}
 
-				Column colObtainedranks = Helper.findColumn(allData, "obtainedranks");
-				assert colObtainedranks != null;
-
-				List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
-
 				String rankPrefix = Helper.getGroupPrefix(rank);
+				HashSet<String> obRanks = rankManager.getObtainedRanks(sender.getUniqueId()).get(track);
 
-				if (!temp.contains(rank)) {
+				if (!obRanks.contains(rank)) {
 					String tmp1 = lang().getProperty("rank.set.doesntexist")
 							.replace("<player>", sender.getName())
 							.replace("<track>", track)
@@ -479,7 +399,7 @@ public class MainCommand{
 				}
 
 				// after success update in cache
-				rankManager.updatePlayerData(sender.getUniqueId(), track, allData);
+				rankManager.updatePlayerCacheData(sender.getUniqueId(), track, allData);
 
 				String tmp3 = lang().getProperty("rank.set")
 						.replace("<rank>", rankPrefix);
@@ -525,14 +445,10 @@ public class MainCommand{
 					return;
 				}
 
-				Column colObtainedranks = Helper.findColumn(allData, "obtainedranks");
-				assert colObtainedranks != null;
-
-				List<String> temp = new ArrayList<>(Arrays.asList(colObtainedranks.getValue().toString().split(",")));
-
 				String rankPrefix = Helper.getGroupPrefix(rank);
+				HashSet<String> obRanks = rankManager.getObtainedRanks(pl.getUniqueId()).get(track);
 
-				if (!temp.contains(rank)) {
+				if (!obRanks.contains(rank)) {
 					String tmp1 = lang().getProperty("rank.set.other.doesntexist")
 							.replace("<player>", pl.getName())
 							.replace("<track>", track)
@@ -567,7 +483,7 @@ public class MainCommand{
 				}
 
 				// after success update in cache
-				rankManager.updatePlayerData(pl.getUniqueId(), track, allData);
+				rankManager.updatePlayerCacheData(pl.getUniqueId(), track, allData);
 
 				String tmp3 = lang().getProperty("rank.set.other")
 						.replace("<player>", pl.getName())
@@ -641,12 +557,12 @@ public class MainCommand{
 			// linked hash map add based on rank weight...then clear based on perms rank
 			List<String> allPermRanks = new ArrayList<>(instance.getMainConfig().getLptracks().get(track).getPermanentranks());
 			if (!allPermRanks.isEmpty()) {
-				Column obtainedRanks = Helper.findColumn(allData, "obtainedranks");
-				assert obtainedRanks != null;
+				HashSet<String> obtainedRanks = new HashSet<>(rankManager.getObtainedRanks(pl.getUniqueId()).get(track));
+
 				for (int i = allPermRanks.size()-1; i>=0; i--) {
 					String temp = allPermRanks.get(i);
 
-					if (obtainedRanks.getValue().toString().contains(temp)) {
+					if (obtainedRanks.contains(temp)) {
 						newSel = temp;
 						break;
 					}
@@ -674,7 +590,7 @@ public class MainCommand{
 			}
 
 			// after success update in cache
-			rankManager.updatePlayerData(pl.getUniqueId(), track, allData);
+			rankManager.updatePlayerCacheData(pl.getUniqueId(), track, allData);
 
 			Component playermsg = Helper.deserializeString(lang().getProperty("rank.clear"));
 

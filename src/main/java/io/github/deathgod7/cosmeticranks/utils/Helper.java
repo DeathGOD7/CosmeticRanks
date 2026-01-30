@@ -13,14 +13,22 @@ import io.github.deathgod7.cosmeticranks.CosmeticRanks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.group.Group;
+import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.types.PrefixNode;
+import net.luckperms.api.query.QueryOptions;
+import net.luckperms.api.track.Track;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import me.clip.placeholderapi.PlaceholderAPI;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class Helper {
 	public static Column findColumn(List<Column> columns, String columnName) {
@@ -30,6 +38,27 @@ public class Helper {
 			}
 		}
 		return null; // Column with the specified name not found
+	}
+
+	public static List<Group> getAllObtainedRanksOfTrack(OfflinePlayer player, String track) {
+		LuckPerms lp = CosmeticRanks.getInstance().getLuckPerms();
+		Track tr = lp.getTrackManager().getTrack(track);
+
+		List<Group> obtainedRanks = new ArrayList<>();
+		if (tr == null || player == null) return obtainedRanks;
+
+		for (String g : tr.getGroups()) {
+			Group group = lp.getGroupManager().getGroup(g);
+			UUID uuid = player.getUniqueId();
+			User user = lp.getUserManager().loadUser(uuid).join();
+
+			Collection<Group> inheritedG = user.getInheritedGroups(user.getQueryOptions());
+			if (inheritedG.contains(group)) {
+				obtainedRanks.add(group);
+			}
+		}
+
+		return obtainedRanks;
 	}
 
 	public static String getTableName(String s) {

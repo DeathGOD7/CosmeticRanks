@@ -16,10 +16,12 @@ import io.github.deathgod7.cosmeticranks.utils.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.luckperms.api.LuckPerms;
+import net.luckperms.api.model.group.Group;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RankManager {
 	CosmeticRanks instance;
@@ -33,12 +35,22 @@ public class RankManager {
 	}
 
 	LinkedHashMap<UUID, LinkedHashMap<String, List<Column>>> cachedPlayerData;
-	public LinkedHashMap<UUID, LinkedHashMap<String, List<Column>>> getCachedPlayerData() {
-		return cachedPlayerData;
+	public LinkedHashMap<String, List<Column>> getPlayerData(UUID uuid) {
+		if (!cachedPlayerData.containsKey(uuid)) { return new LinkedHashMap<>(); }
+		else { return cachedPlayerData.get(uuid); }
+	}
+	public void removePlayerData(UUID uuid) {
+		cachedPlayerData.remove(uuid);
 	}
 
 	LinkedHashMap<UUID, LinkedHashMap<String, HashSet<String>>> cachedObtainedRanks;
-	public LinkedHashMap<UUID, LinkedHashMap<String, HashSet<String>>> getCachedObtainedRanks() { return cachedObtainedRanks; }
+	public LinkedHashMap<String, HashSet<String>> getObtainedRanks(UUID uuid) {
+		if (!cachedObtainedRanks.containsKey(uuid)) { return new LinkedHashMap<>(); }
+		else { return cachedObtainedRanks.get(uuid); }
+	}
+	public void removeObtainedRanks(UUID uuid) {
+		cachedObtainedRanks.remove(uuid);
+	}
 
 	public RankManager(CosmeticRanks ins) {
 		this.instance = ins;
@@ -63,7 +75,6 @@ public class RankManager {
 			Column uuid = new Column("uuid", DataType.VARCHAR, 40);
 			Column playername = new Column("playername", DataType.VARCHAR, 40);
 			Column selectedrank = new Column("selectedrank", DataType.VARCHAR, 40);
-			//Column obtainedranks = new Column("obtainedranks", DataType.TEXT, 65535);
 
 			List<Column> columns = Arrays.asList(playername, selectedrank);
 
@@ -103,43 +114,42 @@ public class RankManager {
 
 	public void reloadRanksTable() {
 		ranksTable.clear();
+		this.createRanksTable();
 		this.loadRanksTable();
 	}
+
 	public void loadPlayerData(@NotNull OfflinePlayer player, String tablename) {
-		// db player data
-		LinkedHashMap<String, List<Column>> playerData;
-		if (!cachedPlayerData.containsKey(player.getUniqueId())) {
-			playerData = new LinkedHashMap<>();
-		}
-		else {
-			playerData = cachedPlayerData.get(player.getUniqueId());
-		}
+		LinkedHashMap<String, List<Column>> playerData = getPlayerData(player.getUniqueId());
+		// get datas of player of track 'x'
 		List<Column> allCols = Helper.getPlayerDatas(player, ranksTable.get(tablename).getName());
 		playerData.put(tablename, allCols);
+		// store track 'x' data of player
 		cachedPlayerData.put(player.getUniqueId(), playerData);
 
 		// dynamic luckperms obtained ranks
-		LinkedHashMap<String, HashSet<String>> obtainedRanks;
-		if (!cachedObtainedRanks.containsKey(player.getUniqueId())) {
-			obtainedRanks = new LinkedHashMap<>();
-		}
-		else {
-			obtainedRanks = cachedObtainedRanks.get(player.getUniqueId());
-		}
-		// get all track ranks in luckperms
-
+		LinkedHashMap<String, HashSet<String>> obtainedRanks = getObtainedRanks(player.getUniqueId());
+		// get obtained ranks in track 'x' of player
+		List<Group> groups = Helper.getAllObtainedRanksOfTrack(player, tablename);
+		obtainedRanks.put(tablename,
+							groups.stream().map(Group::getName)
+							.collect(Collectors.toCollection(HashSet::new))
+		);
+		// store obtained ranks in track 'x' of player
+		cachedObtainedRanks.put(player.getUniqueId(), obtainedRanks);
 
 	}
 
-	public void updatePlayerData(UUID uuid, String tablename, List<Column> data) {
-		LinkedHashMap<String, List<Column>> playerData;
-		if (!cachedPlayerData.containsKey(uuid)) {
-			playerData = new LinkedHashMap<>();
-		}else {
-			playerData = cachedPlayerData.get(uuid);
-		}
+
+	public void updatePlayerCacheData(UUID uuid, String tablename, List<Column> data) {
+		LinkedHashMap<String, List<Column>> playerData =  getPlayerData(uuid);
 		playerData.put(tablename, data);
 		cachedPlayerData.put(uuid, playerData);
+	}
+
+	public void updateObtainedRanksCacheData(UUID uuid, String tablename, HashSet<String> data) {
+		LinkedHashMap<String, HashSet<String>> playerObtainedRanks = getObtainedRanks(uuid);
+		playerObtainedRanks.put(tablename, data);
+		cachedObtainedRanks.put(uuid, playerObtainedRanks);
 	}
 
 }
