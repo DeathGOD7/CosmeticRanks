@@ -43,7 +43,7 @@ repositories {
 	// ---------- [ Triumph Team ] ----------
 	maven(url = "https://repo.triumphteam.dev/snapshots/")
 
-	maven(url = "https://repo.extendedclip.com/content/repositories/placeholderapi/")
+	maven(url = "https://repo.extendedclip.com/releases/")
 
 }
 
@@ -62,14 +62,14 @@ dependencies {
 	implementation("dev.triumphteam:triumph-gui:3.1.11")
 
 	// ---------- [ Adventure ] ----------
-	implementation("net.kyori:adventure-platform-bukkit:4.3.2")
-	implementation("net.kyori:adventure-text-minimessage:4.16.0")
+	implementation("net.kyori:adventure-platform-bukkit:4.4.1")
+	implementation("net.kyori:adventure-text-minimessage:4.26.1")
 
 	// ---------- [ Yaml ] ----------
 	implementation("com.amihaiemil.web:eo-yaml:7.2.0")
 
 	// ---------- [ PlaceholderAPI ] ----------
-	compileOnly("me.clip:placeholderapi:2.11.5")
+	compileOnly("me.clip:placeholderapi:2.11.7")
 
 	// ---------- [ Test - JUnit ] ----------
 	testImplementation(platform("org.junit:junit-bom:5.9.1"))
