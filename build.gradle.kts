@@ -4,7 +4,7 @@ plugins {
 	id("java")
 	id("maven-publish")
 	//id("com.github.johnrengelman.shadow") version "8.1.1" // old and unmaintained
-	id("com.gradleup.shadow") version "9.0.0-beta4" // new and maintained version of shadow
+	id("com.gradleup.shadow") version "9.3.1" // new and maintained version of shadow
 }
 
 group = "io.github.deathgod7"
@@ -59,7 +59,7 @@ dependencies {
 
 	// ---------- [ Triumph CMD/GUI ] ----------
 	implementation("dev.triumphteam:triumph-cmd-bukkit:2.0.0-ALPHA-10")
-	implementation("dev.triumphteam:triumph-gui:3.1.11")
+	implementation("dev.triumphteam:triumph-gui:3.1.13")
 
 	// ---------- [ Adventure ] ----------
 	implementation("net.kyori:adventure-platform-bukkit:4.4.1")

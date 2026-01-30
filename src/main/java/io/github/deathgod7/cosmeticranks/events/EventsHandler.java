@@ -44,7 +44,7 @@ public class EventsHandler implements Listener {
 
 		RankManager rmg = instance.getRankManager();
 
-		if (!rmg.getCachedPlayerData().get(uuid).get(rank).isEmpty()) {
+		if (!rmg.getPlayerData(uuid).get(rank).isEmpty()) {
 			Component temp = Component.text(String.format("[Player Check] Player '%s' found in database. (%s)", player.getName(), rank)).color(NamedTextColor.GREEN);
 			Logger.log(temp, Logger.LogTypes.debug);
 			return true;
@@ -63,9 +63,8 @@ public class EventsHandler implements Listener {
 		Column uuid = new Column("uuid", player.getUniqueId().toString(), DatabaseManager.DataType.VARCHAR);
 		Column playername = new Column("playername", player.getName(), DatabaseManager.DataType.VARCHAR);
 		Column selectedrank = new Column("selectedrank", "", DatabaseManager.DataType.VARCHAR);
-		Column obtainedranks = new Column("obtainedranks", "", DatabaseManager.DataType.VARCHAR);
 
-		List<Column> columns = Arrays.asList(uuid, playername, selectedrank, obtainedranks);
+		List<Column> columns = Arrays.asList(uuid, playername, selectedrank);
 
 		boolean res = false;
 		if (dbm.getDatabase() instanceof SQLite) {
@@ -130,17 +129,17 @@ public class EventsHandler implements Listener {
 				List<Column> x = addPlayer(p, table);
 				Component temp;
 				if (!x.isEmpty()) {
-					temp = Component.text("[Player Join] Player " + p.getName() + " added to the database table (" + table.getName() + ")").color(NamedTextColor.GREEN);
-					instance.getRankManager().updatePlayerData(p.getUniqueId(), rank, x);
+					temp = Component.text("[Player Join Check] Player " + p.getName() + " added to the database table (" + table.getName() + ")").color(NamedTextColor.GREEN);
+					instance.getRankManager().updatePlayerCacheData(p.getUniqueId(), rank, x);
 				}
 				else {
-					temp = Component.text("[Player Join] Player " + p.getName() + " could not be added to the database table (" + table.getName() + ")").color(NamedTextColor.RED);
+					temp = Component.text("[Player Join Check] Player " + p.getName() + " could not be added to the database table (" + table.getName() + ")").color(NamedTextColor.RED);
 				}
 				Logger.log(temp, Logger.LogTypes.debug);
 			}
 			else {
 				// Player already exists
-				Component temp = Component.text("[Player Join] Player " + p.getName() + " already exists in the database table (" + table.getName() + ")").color(NamedTextColor.GRAY);
+				Component temp = Component.text("[Player Join Check] Player " + p.getName() + " already exists in the database table (" + table.getName() + ")").color(NamedTextColor.GRAY);
 				Logger.log(temp, Logger.LogTypes.debug);
 			}
 		}
@@ -150,7 +149,7 @@ public class EventsHandler implements Listener {
 	public void onPlayerBanned(PlayerQuitEvent e) {
 		// Player banned event
 		boolean isBanned = e.getPlayer().isBanned();
-		Logger.log(Component.text("[Player Banned] Player : " + e.getPlayer().getName() + " || Ban Status : " + isBanned).color(NamedTextColor.RED)
+		Logger.log(Component.text("[Player Banned Check] Player : " + e.getPlayer().getName() + " || Ban Status : " + isBanned).color(NamedTextColor.RED)
 					, Logger.LogTypes.debug);
 		if (isBanned) {
 			// Remove player from the database
@@ -165,22 +164,22 @@ public class EventsHandler implements Listener {
 					boolean x = removePlayer(p, table);
 					Component temp;
 					if (x) {
-						temp = Component.text("[Player Banned] Player " + p.getName() + " removed from the database table (" + table.getName() + ")").color(NamedTextColor.GREEN);
+						temp = Component.text("[Player Banned Check] Player " + p.getName() + " removed from the database table (" + table.getName() + ")").color(NamedTextColor.GREEN);
 						// remove temporary data
-						instance.getRankManager().getCachedPlayerData().get(p.getUniqueId()).remove(rank);
+						instance.getRankManager().getPlayerData(p.getUniqueId()).remove(rank);
 					}
 					else {
-						temp = Component.text("[Player Banned] Player " + p.getName() + " could not be removed from the database table (" + table.getName() + ")").color(NamedTextColor.RED);
+						temp = Component.text("[Player Banned Check] Player " + p.getName() + " could not be removed from the database table (" + table.getName() + ")").color(NamedTextColor.RED);
 					}
 					Logger.log(temp, Logger.LogTypes.debug);
 				}
 				else {
 					// Player does not exist
-					Component temp = Component.text("[Player Banned] Player " + p.getName() + " does not exist in the database table (" + table.getName() + ")").color(NamedTextColor.GRAY);
+					Component temp = Component.text("[Player Banned Check] Player " + p.getName() + " does not exist in the database table (" + table.getName() + ")").color(NamedTextColor.GRAY);
 					Logger.log(temp, Logger.LogTypes.debug);
 				}
 			}
-			instance.getRankManager().getCachedPlayerData().remove(p.getUniqueId());
+			instance.getRankManager().removePlayerData(p.getUniqueId());
 		}
 	}
 

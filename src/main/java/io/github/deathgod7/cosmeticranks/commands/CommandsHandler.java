@@ -26,10 +26,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 public class CommandsHandler {
@@ -220,24 +217,13 @@ public class CommandsHandler {
 
 				if (p == null) { return (List<String>) new ArrayList<String>(); }
 
-				List<Column> datas;
 				RankManager rmg = instance.getRankManager();
 
-				if (!rmg.getCachedPlayerData().containsKey(p.getUniqueId()) || !rmg.getCachedPlayerData().get(p.getUniqueId()).containsKey(trackname)) {
+				LinkedHashMap<String, HashSet<String>> obRanksTracks = rmg.getObtainedRanks(p.getUniqueId());
+				if (obRanksTracks.isEmpty() || !obRanksTracks.containsKey(trackname)) {
 					rmg.loadPlayerData(p, trackname);
 				}
-
-				datas = rmg.getCachedPlayerData().get(p.getUniqueId()).get(trackname);
-
-				if (datas == null) { return (List<String>) new ArrayList<String>(); }
-				Column colObtainedranks = Helper.findColumn(datas, "obtainedranks");
-
-				if (colObtainedranks != null) {
-					String[] obtainedRanks = colObtainedranks.getValue().toString().split(",");
-					return (List<String>) Arrays.asList(obtainedRanks);
-				}
-
-				return (List<String>) new ArrayList<String>();
+				return new ArrayList<>(obRanksTracks.get(trackname));
 			}
 			return (List<String>) new ArrayList<String>();
 		});

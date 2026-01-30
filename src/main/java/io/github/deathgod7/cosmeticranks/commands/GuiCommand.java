@@ -92,9 +92,9 @@ public class GuiCommand {
 
 		fillGUI(p, maingui);
 
-		for (String tableName : rankManager.getRanksTable().keySet()) {
-			String trackName = Helper.parsePlaceholders(p, instance.getMainConfig().getLptracks().get(tableName).getName());
-			String materialName = instance.getMainConfig().getLptracks().get(tableName).getIconItem();
+		for (String track : rankManager.getRanksTable().keySet()) {
+			String formattedTrackName = Helper.parsePlaceholders(p, instance.getMainConfig().getLptracks().get(track).getName());
+			String materialName = instance.getMainConfig().getLptracks().get(track).getIconItem();
 			Material material;
 			try {
 				material = Material.valueOf(materialName.toUpperCase());
@@ -104,16 +104,16 @@ public class GuiCommand {
 				material = Material.PAPER;
 			}
 
-			int row = instance.getMainConfig().getLptracks().get(tableName).getGui().get("row");
-			int col = instance.getMainConfig().getLptracks().get(tableName).getGui().get("col");
+			int row = instance.getMainConfig().getLptracks().get(track).getGui().get("row");
+			int col = instance.getMainConfig().getLptracks().get(track).getGui().get("col");
 
 			GuiItem guiItem = ItemBuilder.from(material)
-					.name(Helper.deserializeString(trackName).decoration(TextDecoration.ITALIC, false))
+					.name(Helper.deserializeString(formattedTrackName).decoration(TextDecoration.ITALIC, false))
 					.glow()
 					.asGuiItem();
 
 			guiItem.setAction(e -> {
-				String sub_GuiTitle = Helper.parsePlaceholders(p, subGuiTitle().replace("<track>", trackName));
+				String sub_GuiTitle = Helper.parsePlaceholders(p, subGuiTitle().replace("<track>", formattedTrackName));
 				PaginatedGui subgui = Gui.paginated()
 						.title(Helper.deserializeString(sub_GuiTitle).decoration(TextDecoration.ITALIC, false))
 						.rows(6)
@@ -124,21 +124,20 @@ public class GuiCommand {
 				fillGUI(p, subgui);
 
 				// fill items with #addItem(..)
-				if (!rankManager.getCachedPlayerData().containsKey(p.getUniqueId()) ||
-						!rankManager.getCachedPlayerData().get(p.getUniqueId()).containsKey(tableName) ) {
-					rankManager.loadPlayerData(p, tableName);
+				if (!rankManager.getPlayerData(p.getUniqueId()).isEmpty() ||
+						!rankManager.getPlayerData(p.getUniqueId()).containsKey(track) ) {
+					rankManager.loadPlayerData(p, track);
 				}
 
-				List<Column> allDatas = rankManager.getCachedPlayerData().get(p.getUniqueId()).get(tableName);
-				Column obtainedranks = Helper.findColumn(allDatas, "obtainedranks");
+				List<Column> allDatas = rankManager.getPlayerData(p.getUniqueId()).get(track);
+				HashSet<String> obtainedranks = rankManager.getObtainedRanks(p.getUniqueId()).get(track);
+				System.out.println("[GUI] Player Data : " + rankManager.getObtainedRanks(p.getUniqueId()));
+				System.out.println("[GUI] Input : " + track);
+				System.out.println("[GUI] Obtained Ranks : " + obtainedranks);
 				Column selectedrank = Helper.findColumn(allDatas, "selectedrank");
 
 				if (obtainedranks != null) {
-					List<String> temp = new ArrayList<>(Arrays.asList(obtainedranks.getValue().toString().split(",")));
-					// fix for ghost rank id tag
-					temp.remove("");
-
-					for (String rank : temp) {
+					for (String rank : obtainedranks) {
 						String rankName;
 						LinkedList<String> description;
 
@@ -180,7 +179,7 @@ public class GuiCommand {
 
 						guiRankItem.setAction(event -> {
 							// cr rank set self default default
-							Bukkit.dispatchCommand(p, "cr rank set self " + tableName + " " + rank);
+							Bukkit.dispatchCommand(p, "cr rank set self " + track + " " + rank);
 							// close the menu
 							subgui.close(p);
 						});
@@ -190,7 +189,7 @@ public class GuiCommand {
 							subgui.addItem(guiRankItem);
 						}
 						catch (GuiException ex) {
-							Component f = Component.text("Error while adding items ("+ rank +") to GUI ("+ tableName +"): " + ex.getMessage());
+							Component f = Component.text("Error while adding items ("+ rank +") to GUI ("+ track +"): " + ex.getMessage());
 							Logger.log(f, Logger.LogTypes.debug);
 						}
 					}
@@ -258,7 +257,7 @@ public class GuiCommand {
 				maingui.setItem(row, col, guiItem);
 			}
 			catch (GuiException e) {
-				Component f = Component.text("Error while adding items ("+ tableName +") to GUI(main): " + e.getMessage());
+				Component f = Component.text("Error while adding items ("+ track +") to GUI(main): " + e.getMessage());
 				Logger.log(f, Logger.LogTypes.debug);
 			}
 		}
